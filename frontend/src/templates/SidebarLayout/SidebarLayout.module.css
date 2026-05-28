@@ -1,0 +1,88 @@
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	padding: 1rem;
+
+	background-color: #eff3ff;
+}
+
+.sidebar header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.sidebar header span {
+	font-weight: bold;
+	font-size: 1.2rem;
+}
+
+.sidebar nav {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	flex: 1;
+
+	width: 250px;
+}
+
+.sidebar nav section,
+.sidebar nav ul {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.sidebar nav section {
+	padding-top: 0.5rem;
+	border-top: 1px solid;
+}
+
+.sidebar nav section h2 {
+	font-size: 1.1rem;
+	/* padding-left: 10px; */
+}
+
+.sidebar nav ul {
+	list-style: none;
+}
+
+.sidebar nav li i,
+.sidebar nav li span {
+	font-size: 1rem;
+}
+
+.sidebar nav li i {
+	width: 24px;
+	display: flex;
+	justify-content: center;
+}
+
+.sidebar footer a {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+
+	text-decoration: none;
+	color: #000000;
+}
+
+.sidebar footer a img {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.sidebar footer a .user-details {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.sidebar footer a .user-details p,
+.sidebar footer a .user-details span {
+	font-size: 0.875rem;
+}
