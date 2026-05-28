@@ -1,0 +1,37 @@
+.form-section {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 2.5rem;
+	padding: 2rem 0;
+	flex: 1;
+}
+
+.form-section h2 {
+	font-size: 2rem;
+}
+
+.form-section p {
+	font-size: 1.2rem;
+	text-align: center;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+}
+
+.form {
+	gap: 2rem;
+
+	width: 100%;
+	padding: 0 10rem;
+}
+
+.form-footer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
