@@ -1,0 +1,44 @@
+.form-group {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+
+	border: 1px solid;
+	border-radius: 16px;
+	padding: 0 1rem;
+}
+
+.form-group i {
+	font-size: 1.2rem;
+}
+
+.input-field {
+	position: relative;
+	width: 100%;
+}
+
+.input-field input {
+	font-size: 1rem;
+	padding: 1rem 0.5rem;
+	width: 100%;
+	outline: none;
+	border: none;
+}
+
+.input-field label {
+	font-size: 1rem;
+
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	background-color: #ffffff;
+	transition: 0.2s ease;
+}
+
+.input-field input:focus + label,
+.input-field input:not(:placeholder-shown) + label {
+	top: 0;
+	font-size: 0.75rem;
+}
