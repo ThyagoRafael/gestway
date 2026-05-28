@@ -1,0 +1,17 @@
+.link {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	border-radius: 8px;
+
+	color: #000000;
+	text-decoration: none;
+
+	transition: 0.2s ease;
+}
+
+.link:hover,
+.link.active {
+	background-color: #d9d9d9;
+}
