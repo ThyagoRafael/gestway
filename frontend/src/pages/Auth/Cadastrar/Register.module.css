@@ -1,0 +1,17 @@
+.input-conditions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.input-conditions ul {
+	list-style-position: inside;
+}
+
+.input-conditions ul li {
+	font-size: 0.875rem;
+}
+
+.input-conditions ul li + li {
+	margin-top: 6px;
+}
