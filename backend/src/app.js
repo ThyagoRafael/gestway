@@ -1,12 +1,15 @@
 import express from "express";
 
 import "dotenv/config";
+import { routes } from "./routes/index.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 class App {
 	constructor() {
 		this.server = express();
 		this.middlewares();
 		this.routes();
+		this.errorMiddleware();
 	}
 
 	middlewares() {
@@ -14,7 +17,11 @@ class App {
 	}
 
 	routes() {
-		this.server.use("/api");
+		this.server.use("/api", routes);
+	}
+
+	errorMiddleware() {
+		this.server.use(errorMiddleware);
 	}
 }
 
