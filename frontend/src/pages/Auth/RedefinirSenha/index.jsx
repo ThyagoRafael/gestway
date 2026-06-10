@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { MdEmail } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import { FaLock, FaCheck } from "react-icons/fa";
 
 import BrandingSection from "../../../components/BrandingSection";
@@ -8,12 +7,10 @@ import FormButton from "../../../components/FormButton";
 import FormInput from "../../../components/FormInput";
 import FormSection from "../../../components/FormSection";
 
-import styles from "./EsqueceuSenha.module.css";
+import styles from "./RedefinirSenha.module.css";
 
-export default function EsqueceuSenha() {
-	const [step, setStep] = useState(1);
+export default function RedefinirSenha() {
 	const [formData, setFormData] = useState({
-		email: "",
 		newPassword: "",
 		confirmPassword: "",
 	});
@@ -23,51 +20,10 @@ export default function EsqueceuSenha() {
 		setFormData((prev) => ({ ...prev, [nameInput]: value }));
 	};
 
-	const handleEmailSubmit = (e) => {
-		e.preventDefault();
-		setStep(2);
-	};
-
-	const handlePasswordSubmit = (e) => {
+	const handleSubmit = (e) => {
 		e.preventDefault();
 		navigate("/entrar");
 	};
-
-	if (step === 1) {
-		return (
-			<>
-				<BrandingSection />
-
-				<FormSection
-					title="Esqueceu sua senha?"
-					footer={
-						<>
-							<Link to="/entrar">Volte para o Login</Link>
-							<Link to="/cadastrar">Não tem conta? Cadastre-se agora.</Link>
-						</>
-					}
-					handleSubmit={handleEmailSubmit}
-				>
-					<p className={styles.description}>
-						Digite seu email para resetar sua senha.
-					</p>
-
-					<FormInput
-						icon={<MdEmail size={16} />}
-						type="email"
-						name="email"
-						required={true}
-						autoComplete="email"
-						label="E-mail"
-						value={formData.email}
-						handleChange={handleChange}
-					/>
-
-					<FormButton>Confirmar Email</FormButton>
-				</FormSection>
-			</>
-		);
-	}
 
 	return (
 		<>
@@ -76,7 +32,7 @@ export default function EsqueceuSenha() {
 			<FormSection
 				title="Esqueceu sua senha?"
 				footer={null}
-				handleSubmit={handlePasswordSubmit}
+				handleSubmit={handleSubmit}
 			>
 				<div className={styles.successBox}>
 					<p>E-mail confirmado com sucesso.</p>
