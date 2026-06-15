@@ -1,0 +1,505 @@
+.page {
+	flex: 1;
+	padding: 1.5rem 2rem 3rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	background: #f9f9f9;
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.breadcrumb { font-size: 0.8rem; color: #888; }
+.titulo     { font-size: 1.75rem; font-weight: 700; color: #111; }
+.subtitulo  { font-size: 0.875rem; color: #666; margin-top: -12px; }
+
+/* ── seções ────────────────────────────────────────── */
+.section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.sectionTitle {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: #111;
+}
+
+/* ── identidade visual ─────────────────────────────── */
+.identidadeCard {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.logoArea {
+	padding: 1.5rem;
+	border-right: 1px solid #e5e7eb;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.logoHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	align-self: flex-start;
+}
+
+.logoIcon { font-size: 1.1rem; }
+.logoLabel { font-size: 0.9rem; font-weight: 500; color: #333; }
+
+.logoPreviewWrap {
+	display: flex;
+	justify-content: center;
+}
+
+.logoPreview {
+	width: 64px; height: 64px;
+	border-radius: 14px;
+	background: #729aff;
+	display: flex; align-items: center; justify-content: center;
+}
+
+.logoG {
+	color: #fff;
+	font-size: 1.8rem;
+	font-weight: 700;
+}
+
+.coresArea {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.coresTitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #111;
+	text-align: center;
+}
+
+.corItem {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.corLabel { font-size: 0.8rem; color: #888; }
+
+.corInputWrap {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 4px 10px;
+	background: #f9fafb;
+}
+
+.corSwatch {
+	width: 20px; height: 20px;
+	border: none; border-radius: 4px;
+	cursor: pointer; padding: 0;
+	background: none;
+}
+
+.corText {
+	border: none; background: none;
+	font-size: 0.875rem; color: #333;
+	outline: none; flex: 1;
+	font-family: monospace;
+}
+
+/* ── banner hero ───────────────────────────────────── */
+.bannerHeroWrap {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.bannerHeroTitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #111;
+	text-align: center;
+}
+
+.bannersRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.bannerCard {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.bannerCard:first-child { border-right: 1px solid #e5e7eb; }
+
+.bannerNumero {
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: #555;
+}
+
+/* ── grids de promoções ────────────────────────────── */
+.gridsWrap {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.gridCard {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.gridCard + .gridCard { border-top: 1px solid #e5e7eb; }
+
+.gridLabel {
+	font-size: 0.8rem;
+	color: #888;
+	text-align: center;
+}
+
+/* preview de produtos */
+.produtosPreview {
+	display: flex;
+	gap: 8px;
+	margin-top: 4px;
+	flex-wrap: wrap;
+}
+
+.produtoCard {
+	width: 90px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	overflow: hidden;
+	font-size: 0.65rem;
+	background: #fff;
+}
+
+.produtoImgReal {
+	height: 60px;
+	background: #e5e7eb;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.produtoBadge {
+	position: absolute;
+	top: 4px; left: 4px;
+	background: #729aff;
+	color: #fff;
+	font-size: 0.6rem;
+	padding: 1px 5px;
+	border-radius: 99px;
+}
+
+.produtoInfo { padding: 4px 6px; }
+.produtoNome { font-weight: 600; color: #111; margin-bottom: 2px; }
+.produtoPrecoOld { color: #aaa; text-decoration: line-through; }
+.produtoPreco { color: #111; font-weight: 600; }
+.produtoEconomia { color: #16a34a; margin-top: 2px; }
+
+.produtoCardEmpty {
+	width: 90px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	overflow: hidden;
+	font-size: 0.65rem;
+	background: #fff;
+}
+
+.produtoPlus {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 60px;
+	background: #f3f4f6;
+	font-size: 1.2rem;
+	color: #aaa;
+	cursor: pointer;
+}
+
+.produtoInfoEmpty {
+	padding: 4px 6px;
+	color: #aaa;
+	line-height: 1.4;
+}
+
+/* ── voucher banner ────────────────────────────────── */
+.voucherBannerCard {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 2rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 1.5rem;
+	background: #fff;
+}
+
+.voucherLeft { display: flex; flex-direction: column; gap: 1rem; }
+
+.toggleRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.toggleLabel { font-size: 0.875rem; color: #333; }
+
+.toggle {
+	width: 42px; height: 24px;
+	border-radius: 99px;
+	background: #d1d5db;
+	border: none;
+	cursor: pointer;
+	position: relative;
+	transition: background 0.2s;
+	padding: 0;
+}
+
+.toggleOn { background: #22c55e; }
+
+.toggleThumb {
+	position: absolute;
+	top: 3px; left: 3px;
+	width: 18px; height: 18px;
+	border-radius: 50%;
+	background: #fff;
+	transition: transform 0.2s;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggleOn .toggleThumb { transform: translateX(18px); }
+
+.voucherRight {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 240px;
+}
+
+.voucherSelLabel { font-size: 0.85rem; font-weight: 500; color: #333; }
+
+.voucherSelBtn {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #333;
+}
+
+.voucherSelBtn:hover { border-color: #729aff; }
+
+.voucherDrop {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0; right: 0;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+	z-index: 100;
+	overflow: hidden;
+}
+
+.voucherDropHeader {
+	display: flex;
+	justify-content: space-between;
+	padding: 6px 12px;
+	font-size: 0.75rem;
+	color: #888;
+	background: #f9fafb;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.voucherDropItem {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	padding: 9px 12px;
+	border: none;
+	background: none;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #333;
+	text-align: left;
+}
+
+.voucherDropItem:hover { background: #f9fafb; }
+.voucherDropItemSel { background: #eff3ff; color: #729aff; }
+
+/* ── formulário genérico ───────────────────────────── */
+.formGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.formGroup label {
+	font-size: 0.85rem;
+	color: #555;
+}
+
+.input {
+	padding: 8px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	outline: none;
+	background: #fff;
+	color: #111;
+}
+
+.input:focus { border-color: #729aff; }
+
+.textarea {
+	padding: 8px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	outline: none;
+	background: #fff;
+	color: #111;
+	resize: vertical;
+	font-family: inherit;
+}
+
+.textarea:focus { border-color: #729aff; }
+
+.textareaWrap { position: relative; }
+
+.charCount {
+	position: absolute;
+	bottom: 8px; right: 10px;
+	font-size: 0.7rem;
+	color: #aaa;
+}
+
+.charCountInline {
+	font-size: 0.7rem;
+	color: #aaa;
+	align-self: flex-end;
+}
+
+/* ── select ────────────────────────────────────────── */
+.selectWrap { position: relative; display: inline-flex; align-items: center; }
+
+.select {
+	appearance: none;
+	padding: 7px 32px 7px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	background: #fff;
+	color: #333;
+	cursor: pointer;
+	outline: none;
+	min-width: 160px;
+}
+
+.select:focus { border-color: #729aff; }
+
+.selectIcon {
+	position: absolute;
+	right: 10px;
+	color: #888;
+	pointer-events: none;
+}
+
+/* ── upload ────────────────────────────────────────── */
+.uploadArea {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.uploadInner { display: flex; flex-direction: column; gap: 4px; }
+
+.uploadBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 14px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.8rem;
+	cursor: pointer;
+	color: #333;
+}
+
+.uploadBtn:hover { border-color: #729aff; }
+
+.uploadHint { font-size: 0.7rem; color: #aaa; max-width: 200px; line-height: 1.4; }
+
+.uploadPreview {
+	width: 52px; height: 52px;
+	border-radius: 8px;
+	object-fit: cover;
+	border: 1px solid #e5e7eb;
+}
+
+.uploadSmall .uploadPreview { width: 40px; height: 40px; }
+
+/* ── botões de ação ────────────────────────────────── */
+.acoes {
+	display: flex;
+	justify-content: flex-end;
+	gap: 1rem;
+	padding-top: 0.5rem;
+}
+
+.btnVisualizar {
+	padding: 10px 28px;
+	background: #729aff;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.btnVisualizar:hover { background: #5a7bce; }
+
+.btnSalvar {
+	padding: 10px 28px;
+	background: #729aff;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.btnSalvar:hover { background: #5a7bce; }
