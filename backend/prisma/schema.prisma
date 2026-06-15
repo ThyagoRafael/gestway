@@ -6,19 +6,579 @@ datasource db {
   provider = "mysql"
 }
 
-enum UserRole {
-  ADMIN
-  CUSTOMER
-  SELLER
+model aceite_termos {
+  id_aceite        BigInt                       @id @default(autoincrement())
+  usuario_tipo     aceite_termos_usuario_tipo
+  usuario_id       Int
+  documento_tipo   aceite_termos_documento_tipo
+  versao_documento String                       @db.VarChar(20)
+  data_hora_aceite DateTime                     @db.DateTime(0)
+
+  @@index([data_hora_aceite], map: "idx_aceite_data")
+  @@index([usuario_tipo, usuario_id], map: "idx_aceite_usuario")
 }
 
-model User {
-  id           Int      @id @default(autoincrement())
-  fullName     String   @map("full_name") @db.VarChar(100)
-  email        String   @unique @db.VarChar(100)
-  phoneNumber  String   @map("phone_number") @db.VarChar(16)
-  passwordHash String   @map("password_hash") @db.Text
-  role         UserRole @default(CUSTOMER)
+model usuario {
+  id_usuario            Int            @id @default(autoincrement())
+  nome_completo_usuario String         @db.VarChar(150)
+  email_usuario         String         @unique(map: "email_usuario_UNIQUE") @db.VarChar(150)
+  telefone_usuario      String         @db.VarChar(11)
+  senha_hash_usuario    String         @db.VarChar(255)
+  foto_url_usuario      String?        @db.VarChar(255)
+  administrador         administrador?
+}
 
-  @@map("users")
+model administrador {
+  id_administrador Int @id @unique(map: "id_administrador_UNIQUE") @default(autoincrement())
+  id_usuario       Int @unique
+
+  data_criacao_administrador     DateTime? @db.DateTime(0)
+  data_atualizacao_administrador DateTime? @db.DateTime(0)
+
+  usuario                                                                usuario                           @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  banner_banner_atualizado_por_id_administradorToadministrador           banner[]                          @relation("banner_atualizado_por_id_administradorToadministrador")
+  banner_banner_criado_por_id_administradorToadministrador               banner[]                          @relation("banner_criado_por_id_administradorToadministrador")
+  cores_marca_cores_marca_atualizado_por_id_administradorToadministrador cores_marca[]                     @relation("cores_marca_atualizado_por_id_administradorToadministrador")
+  cores_marca_cores_marca_criado_por_id_administradorToadministrador     cores_marca[]                     @relation("cores_marca_criado_por_id_administradorToadministrador")
+  edicao_site_edicao_site_atualizado_por_id_administradorToadministrador edicao_site[]                     @relation("edicao_site_atualizado_por_id_administradorToadministrador")
+  edicao_site_edicao_site_criado_por_id_administradorToadministrador     edicao_site[]                     @relation("edicao_site_criado_por_id_administradorToadministrador")
+  geracao_relatorio                                                      geracao_relatorio[]
+  grid_grid_atualizado_por_id_administradorToadministrador               grid[]                            @relation("grid_atualizado_por_id_administradorToadministrador")
+  grid_grid_criado_por_id_administradorToadministrador                   grid[]                            @relation("grid_criado_por_id_administradorToadministrador")
+  logotipo_logotipo_atualizado_por_id_administradorToadministrador       logotipo[]                        @relation("logotipo_atualizado_por_id_administradorToadministrador")
+  logotipo_logotipo_criado_por_id_administradorToadministrador           logotipo[]                        @relation("logotipo_criado_por_id_administradorToadministrador")
+  relatorio_desempenho_vendedores                                        relatorio_desempenho_vendedores[]
+  relatorio_inventario_estoque                                           relatorio_inventario_estoque[]
+  relatorio_movimentacoes_estoque                                        relatorio_movimentacoes_estoque[]
+  relatorio_vendas_mensais                                               relatorio_vendas_mensais[]
+  voucher_voucher_atualizado_por_id_administradorToadministrador         voucher[]                         @relation("voucher_atualizado_por_id_administradorToadministrador")
+  voucher_voucher_criado_por_id_administradorToadministrador             voucher[]                         @relation("voucher_criado_por_id_administradorToadministrador")
+
+  @@index([data_criacao_administrador, data_atualizacao_administrador], map: "idx_administrador_datas")
+}
+
+model audit_log {
+  id_audit     BigInt                 @id @default(autoincrement())
+  tabela       String                 @db.VarChar(64)
+  registro_pk  String                 @db.VarChar(64)
+  acao         audit_log_acao
+  usuario_tipo audit_log_usuario_tipo @default(SISTEMA)
+  usuario_id   Int?
+  origem       String?                @db.VarChar(80)
+  ocorrido_em  DateTime               @default(now()) @db.DateTime(0)
+  dados_antes  Json?
+  dados_depois Json?
+
+  @@index([ocorrido_em], map: "idx_audit_ocorrido")
+  @@index([tabela, registro_pk], map: "idx_audit_tabela_pk")
+  @@index([usuario_tipo, usuario_id], map: "idx_audit_usuario")
+}
+
+model banner {
+  id_banner                                                           Int            @id
+  titulo_banner                                                       String?        @db.VarChar(64)
+  texto_descricao_upper_banner                                        String?        @db.VarChar(64)
+  texto_descricao_banner                                              String?        @db.VarChar(64)
+  texto_desconto                                                      String?        @db.VarChar(21)
+  imagem_url_banner                                                   String?        @db.VarChar(255)
+  criado_em                                                           DateTime       @default(now()) @db.DateTime(0)
+  atualizado_em                                                       DateTime       @default(now()) @db.DateTime(0)
+  criado_por_id_administrador                                         Int?
+  atualizado_por_id_administrador                                     Int?
+  administrador_banner_atualizado_por_id_administradorToadministrador administrador? @relation("banner_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_banner_atualizado_por_admin")
+  administrador_banner_criado_por_id_administradorToadministrador     administrador? @relation("banner_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_banner_criado_por_admin")
+
+  @@index([atualizado_por_id_administrador], map: "fk_banner_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "fk_banner_criado_por_admin")
+}
+
+model carrinho {
+  id_carrinho     BigInt                   @id @default(autoincrement())
+  comprador_tipo  carrinho_comprador_tipo  @default(COMPRADOR)
+  comprador_id    Int
+  cpf_cliente     String?                  @db.Char(11)
+  status_carrinho carrinho_status_carrinho @default(ABERTO)
+  criado_em       DateTime                 @default(now()) @db.DateTime(0)
+  atualizado_em   DateTime                 @default(now()) @db.DateTime(0)
+  cliente         cliente?                 @relation(fields: [cpf_cliente], references: [cpf_cliente], onDelete: Restrict, onUpdate: Restrict, map: "fk_carrinho_cliente")
+  carrinho_item   carrinho_item[]
+  venda           venda[]
+
+  @@index([comprador_tipo, comprador_id], map: "idx_carrinho_comprador")
+  @@index([comprador_tipo, comprador_id, status_carrinho], map: "idx_carrinho_comprador_status")
+  @@index([criado_em, atualizado_em], map: "idx_carrinho_datas")
+  @@index([cpf_cliente], map: "idx_carrinho_id_cliente")
+  @@index([status_carrinho], map: "idx_carrinho_status")
+}
+
+model carrinho_item {
+  id_carrinho_item        BigInt   @id @default(autoincrement())
+  id_carrinho             BigInt
+  id_produto              Int
+  quantidade              Int
+  preco_unitario_snapshot Decimal? @db.Decimal(10, 2)
+  criado_em               DateTime @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime @default(now()) @db.DateTime(0)
+  carrinho                carrinho @relation(fields: [id_carrinho], references: [id_carrinho], onDelete: Cascade, onUpdate: Restrict, map: "fk_carrinho_item_carrinho")
+  produto                 produto  @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_carrinho_item_produto")
+
+  @@unique([id_carrinho, id_produto], map: "uq_carrinho_item_produto")
+  @@index([id_carrinho], map: "idx_carrinho_item_carrinho")
+  @@index([id_produto], map: "idx_carrinho_item_produto")
+}
+
+model categoria {
+  id_categoria               Int                        @id @unique(map: "idcategoria_UNIQUE") @default(autoincrement())
+  nome_categoria             String                     @db.VarChar(150)
+  imagem_categoria           String?                    @db.VarChar(255)
+  descricao_categoria        String?                    @db.VarChar(250)
+  tipo_categoria             categoria_tipo_categoria   @default(PRODUTO)
+  status_categoria           categoria_status_categoria @default(DISPONIVEL)
+  data_criacao_categoria     DateTime                   @default(now()) @db.DateTime(0)
+  data_atualizacao_categoria DateTime                   @updatedAt @db.DateTime(0)
+  produto                    produto[]
+
+  @@unique([nome_categoria, tipo_categoria], map: "uq_categoria_nome_tipo")
+  @@index([status_categoria, tipo_categoria], map: "idx_categoria_status_tipo")
+}
+
+model cliente {
+  cpf_cliente      String                 @id @db.Char(11)
+  nome_cliente     String                 @db.VarChar(150)
+  email_cliente    String                 @unique(map: "uq_cliente_email") @db.VarChar(150)
+  telefone_cliente String                 @db.VarChar(11)
+  status_cliente   cliente_status_cliente @default(ATIVO)
+  criado_em        DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em    DateTime               @default(now()) @db.DateTime(0)
+  carrinho         carrinho[]
+  venda            venda[]
+
+  @@index([criado_em, atualizado_em], map: "idx_cliente_datas")
+  @@index([status_cliente], map: "idx_cliente_status")
+}
+
+model comissao_mensal_vendedor {
+  id_comissao_mensal         BigInt                     @id @default(autoincrement())
+  id_vendedor                Int
+  competencia                DateTime                   @db.Date
+  valor_comissao             Decimal                    @default(0.00) @db.Decimal(10, 2)
+  id_status_comissao_mensal  Int                        @default(1) @db.UnsignedTinyInt
+  observacao                 String?                    @db.VarChar(255)
+  criado_em                  DateTime                   @default(now()) @db.DateTime(0)
+  atualizado_em              DateTime                   @default(now()) @db.DateTime(0)
+  ref_status_comissao_mensal ref_status_comissao_mensal @relation(fields: [id_status_comissao_mensal], references: [id_status_comissao_mensal], onUpdate: Restrict, map: "fk_comissao_mensal_status")
+  vendedor                   vendedor                   @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_comissao_mensal_vendedor")
+
+  @@unique([id_vendedor, competencia], map: "uq_comissao_mensal_vendedor_competencia")
+  @@index([competencia], map: "idx_comissao_mensal_competencia")
+  @@index([id_status_comissao_mensal], map: "idx_comissao_mensal_status")
+  @@index([id_vendedor], map: "idx_comissao_mensal_vendedor")
+}
+
+model cores_marca {
+  id_cores_marca                                                           Int            @id @default(autoincrement())
+  id_edicao_site                                                           Int            @unique(map: "uq_cores_marca_edicao_site")
+  cor_primaria                                                             String?        @db.Char(7)
+  cor_secundaria                                                           String?        @db.Char(7)
+  criado_em                                                                DateTime       @default(now()) @db.DateTime(0)
+  atualizado_em                                                            DateTime       @default(now()) @db.DateTime(0)
+  criado_por_id_administrador                                              Int?
+  atualizado_por_id_administrador                                          Int?
+  administrador_cores_marca_atualizado_por_id_administradorToadministrador administrador? @relation("cores_marca_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_cores_marca_atualizado_por_admin")
+  administrador_cores_marca_criado_por_id_administradorToadministrador     administrador? @relation("cores_marca_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_cores_marca_criado_por_admin")
+  edicao_site                                                              edicao_site    @relation(fields: [id_edicao_site], references: [id_edicao_site], onDelete: Cascade, onUpdate: Restrict, map: "fk_cores_marca_edicao_site")
+
+  @@index([atualizado_por_id_administrador], map: "fk_cores_marca_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "fk_cores_marca_criado_por_admin")
+}
+
+model edicao_site {
+  id_edicao_site                                                           Int            @id @unique(map: "id_edicao_site_UNIQUE") @default(autoincrement())
+  criado_em                                                                DateTime       @default(now()) @db.DateTime(0)
+  atualizado_em                                                            DateTime       @default(now()) @db.DateTime(0)
+  criado_por_id_administrador                                              Int?
+  atualizado_por_id_administrador                                          Int?
+  cores_marca                                                              cores_marca?
+  administrador_edicao_site_atualizado_por_id_administradorToadministrador administrador? @relation("edicao_site_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_edicao_site_atualizado_por_admin")
+  administrador_edicao_site_criado_por_id_administradorToadministrador     administrador? @relation("edicao_site_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_edicao_site_criado_por_admin")
+  logotipo                                                                 logotipo?
+
+  @@index([atualizado_por_id_administrador], map: "fk_edicao_site_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "fk_edicao_site_criado_por_admin")
+}
+
+model geracao_relatorio {
+  id_geracao       BigInt                           @id @default(autoincrement())
+  tipo_relatorio   geracao_relatorio_tipo_relatorio
+  data_inicio      DateTime                         @db.Date
+  data_fim         DateTime                         @db.Date
+  gerado_em        DateTime                         @db.DateTime(0)
+  id_administrador Int
+  administrador    administrador                    @relation(fields: [id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_geracao_relatorio_admin")
+
+  @@index([id_administrador], map: "fk_geracao_relatorio_admin")
+  @@index([gerado_em], map: "idx_relatorio_gerado_em")
+  @@index([data_inicio, data_fim], map: "idx_relatorio_periodo")
+  @@index([tipo_relatorio], map: "idx_relatorio_tipo")
+}
+
+model grid {
+  id_grid                                                           Int            @id @unique(map: "idgrid_UNIQUE") @default(autoincrement())
+  titulo_grid                                                       String         @unique(map: "titulo_grid_UNIQUE") @db.VarChar(45)
+  criado_em                                                         DateTime       @default(now()) @db.DateTime(0)
+  atualizado_em                                                     DateTime       @default(now()) @db.DateTime(0)
+  criado_por_id_administrador                                       Int?
+  atualizado_por_id_administrador                                   Int?
+  administrador_grid_atualizado_por_id_administradorToadministrador administrador? @relation("grid_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_grid_atualizado_por_admin")
+  administrador_grid_criado_por_id_administradorToadministrador     administrador? @relation("grid_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_grid_criado_por_admin")
+
+  @@index([atualizado_por_id_administrador], map: "fk_grid_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "fk_grid_criado_por_admin")
+}
+
+model logotipo {
+  id_logotipo                                                           Int            @id @default(autoincrement())
+  id_edicao_site                                                        Int            @unique(map: "uq_logotipo_edicao_site")
+  logotipo_url                                                          String         @db.VarChar(255)
+  criado_em                                                             DateTime       @default(now()) @db.DateTime(0)
+  atualizado_em                                                         DateTime       @default(now()) @db.DateTime(0)
+  criado_por_id_administrador                                           Int?
+  atualizado_por_id_administrador                                       Int?
+  administrador_logotipo_atualizado_por_id_administradorToadministrador administrador? @relation("logotipo_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_logotipo_atualizado_por_admin")
+  administrador_logotipo_criado_por_id_administradorToadministrador     administrador? @relation("logotipo_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_logotipo_criado_por_admin")
+  edicao_site                                                           edicao_site    @relation(fields: [id_edicao_site], references: [id_edicao_site], onDelete: Cascade, onUpdate: Restrict, map: "fk_logotipo_edicao_site")
+
+  @@index([atualizado_por_id_administrador], map: "fk_logotipo_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "fk_logotipo_criado_por_admin")
+}
+
+model movimentacao_estoque {
+  id_movimentacao   BigInt                                 @id @default(autoincrement())
+  id_produto        Int
+  tipo_movimentacao movimentacao_estoque_tipo_movimentacao
+  quantidade        Int
+  motivo            String                                 @db.VarChar(255)
+  responsavel_tipo  movimentacao_estoque_responsavel_tipo
+  responsavel_id    Int
+  data_hora         DateTime                               @db.DateTime(0)
+  id_vendedor       Int?
+  produto           produto                                @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_mov_produto")
+  vendedor          vendedor?                              @relation(fields: [id_vendedor], references: [id_vendedor], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_vendedor")
+
+  @@index([data_hora], map: "idx_mov_data")
+  @@index([id_vendedor], map: "idx_mov_id_vendedor")
+  @@index([id_produto], map: "idx_mov_produto")
+  @@index([tipo_movimentacao], map: "idx_mov_tipo")
+}
+
+model produto {
+  id_produto               Int                    @id @unique(map: "idproduto_UNIQUE") @default(autoincrement())
+  nome_produto             String                 @db.VarChar(150)
+  preco_venda_produto      Decimal                @db.Decimal(10, 2)
+  estoque_inicial_produto  Int
+  estoque_minimo_produto   Int
+  imagem_produto           String?                @db.VarChar(255)
+  descricao_produto        String?                @db.VarChar(250)
+  id_categoria             Int?
+  sku_produto              String?                @unique(map: "uq_produto_sku") @db.VarChar(64)
+  status_produto           produto_status_produto @default(DISPONIVEL)
+  ativo_produto            Boolean                @default(true)
+  controla_estoque_produto Boolean                @default(true)
+  estoque_atual_produto    Int?
+  data_criacao_produto     DateTime?              @db.DateTime(0)
+  data_atualizacao_produto DateTime?              @db.DateTime(0)
+  carrinho_item            carrinho_item[]
+  movimentacao_estoque     movimentacao_estoque[]
+  categoria                categoria?             @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_produto_categoria")
+  venda_item               venda_item[]
+
+  @@index([ativo_produto], map: "idx_produto_ativo")
+  @@index([id_categoria], map: "idx_produto_categoria")
+  @@index([estoque_atual_produto, estoque_minimo_produto], map: "idx_produto_estoque")
+  @@index([status_produto], map: "idx_produto_status")
+}
+
+model ref_status_comissao_mensal {
+  id_status_comissao_mensal        Int                        @id @db.UnsignedTinyInt
+  codigo_status_comissao_mensal    String                     @unique(map: "uq_ref_status_comissao_mensal_codigo") @db.VarChar(32)
+  descricao_status_comissao_mensal String                     @db.VarChar(120)
+  ordem_exibicao                   Int                        @db.UnsignedTinyInt
+  ativo                            Boolean                    @default(true)
+  criado_em                        DateTime                   @default(now()) @db.DateTime(0)
+  atualizado_em                    DateTime                   @default(now()) @db.DateTime(0)
+  comissao_mensal_vendedor         comissao_mensal_vendedor[]
+
+  @@index([ativo], map: "idx_ref_status_comissao_mensal_ativo")
+  @@index([ordem_exibicao], map: "idx_ref_status_comissao_mensal_ordem")
+}
+
+model relatorio_desempenho_vendedores {
+  id_relatorio_desempenho_vendedores BigInt                                          @id @default(autoincrement())
+  data_inicio                        DateTime                                        @db.Date
+  data_fim                           DateTime                                        @db.Date
+  formato_arquivo                    relatorio_desempenho_vendedores_formato_arquivo @default(EXCEL)
+  incluir_ranking_vendas             Boolean                                         @default(true)
+  incluir_ranking_comissoes          Boolean                                         @default(true)
+  id_administrador                   Int
+  gerado_em                          DateTime                                        @default(now()) @db.DateTime(0)
+  administrador                      administrador                                   @relation(fields: [id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_rel_desempenho_vendedores_admin")
+
+  @@index([id_administrador], map: "fk_rel_desempenho_vendedores_admin")
+  @@index([gerado_em], map: "idx_rel_desempenho_vendedores_gerado_em")
+  @@index([data_inicio, data_fim], map: "idx_rel_desempenho_vendedores_periodo")
+}
+
+model relatorio_inventario_estoque {
+  id_relatorio_inventario_estoque BigInt                                       @id @default(autoincrement())
+  data_inicio                     DateTime                                     @db.Date
+  data_fim                        DateTime                                     @db.Date
+  formato_arquivo                 relatorio_inventario_estoque_formato_arquivo @default(EXCEL)
+  incluir_lista_produtos          Boolean                                      @default(true)
+  incluir_quantidade              Boolean                                      @default(true)
+  incluir_valor_total_estoque     Boolean                                      @default(true)
+  id_administrador                Int
+  gerado_em                       DateTime                                     @default(now()) @db.DateTime(0)
+  administrador                   administrador                                @relation(fields: [id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_rel_inventario_estoque_admin")
+
+  @@index([id_administrador], map: "fk_rel_inventario_estoque_admin")
+  @@index([gerado_em], map: "idx_rel_inventario_estoque_gerado_em")
+  @@index([data_inicio, data_fim], map: "idx_rel_inventario_estoque_periodo")
+}
+
+model relatorio_movimentacoes_estoque {
+  id_relatorio_movimentacoes_estoque BigInt                                          @id @default(autoincrement())
+  data_inicio                        DateTime                                        @db.Date
+  data_fim                           DateTime                                        @db.Date
+  formato_arquivo                    relatorio_movimentacoes_estoque_formato_arquivo @default(EXCEL)
+  incluir_entradas                   Boolean                                         @default(true)
+  incluir_saidas                     Boolean                                         @default(true)
+  incluir_ajustes                    Boolean                                         @default(true)
+  id_administrador                   Int
+  gerado_em                          DateTime                                        @default(now()) @db.DateTime(0)
+  administrador                      administrador                                   @relation(fields: [id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_rel_movimentacoes_estoque_admin")
+
+  @@index([id_administrador], map: "fk_rel_movimentacoes_estoque_admin")
+  @@index([gerado_em], map: "idx_rel_movimentacoes_estoque_gerado_em")
+  @@index([data_inicio, data_fim], map: "idx_rel_movimentacoes_estoque_periodo")
+}
+
+model relatorio_vendas_mensais {
+  id_relatorio_vendas_mensais BigInt                                        @id @default(autoincrement())
+  data_inicio                 DateTime                                      @db.Date
+  data_fim                    DateTime                                      @db.Date
+  formato_arquivo             relatorio_vendas_mensais_formato_arquivo      @default(EXCEL)
+  granularidade_resumo        relatorio_vendas_mensais_granularidade_resumo @default(DIA)
+  incluir_faturamento         Boolean                                       @default(true)
+  incluir_quantidade_vendida  Boolean                                       @default(true)
+  id_administrador            Int
+  gerado_em                   DateTime                                      @default(now()) @db.DateTime(0)
+  administrador               administrador                                 @relation(fields: [id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_rel_vendas_mensais_admin")
+
+  @@index([id_administrador], map: "fk_rel_vendas_mensais_admin")
+  @@index([gerado_em], map: "idx_rel_vendas_mensais_gerado_em")
+  @@index([data_inicio, data_fim], map: "idx_rel_vendas_mensais_periodo")
+}
+
+model token_recuperacao_senha {
+  id_token       BigInt    @id @default(autoincrement())
+  usuario_id     Int
+  token_hash     String    @unique(map: "uq_token_hash") @db.VarChar(255)
+  data_criacao   DateTime  @default(now()) @db.DateTime(0)
+  data_expiracao DateTime  @db.DateTime(0)
+  utilizado_em   DateTime? @db.DateTime(0)
+
+  @@index([data_expiracao], map: "idx_token_expiracao")
+}
+
+model venda {
+  id_venda         BigInt                 @id @default(autoincrement())
+  numero_pedido    String                 @unique(map: "uq_venda_numero_pedido") @db.VarChar(32)
+  cpf_cliente      String                 @db.Char(11)
+  id_vendedor      Int?
+  id_carrinho      BigInt?
+  status_pagamento venda_status_pagamento @default(AGUARDANDO)
+  total_bruto      Decimal                @default(0.00) @db.Decimal(10, 2)
+  total_desconto   Decimal                @default(0.00) @db.Decimal(10, 2)
+  total_liquido    Decimal                @default(0.00) @db.Decimal(10, 2)
+  criado_em        DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em    DateTime               @default(now()) @db.DateTime(0)
+  carrinho         carrinho?              @relation(fields: [id_carrinho], references: [id_carrinho], onUpdate: Restrict, map: "fk_venda_carrinho")
+  cliente          cliente                @relation(fields: [cpf_cliente], references: [cpf_cliente], onUpdate: Restrict, map: "fk_venda_cliente")
+  vendedor         vendedor?              @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_venda_vendedor")
+  venda_item       venda_item[]
+
+  @@index([id_carrinho], map: "idx_venda_carrinho")
+  @@index([cpf_cliente], map: "idx_venda_cliente")
+  @@index([criado_em, atualizado_em], map: "idx_venda_datas")
+  @@index([status_pagamento], map: "idx_venda_status")
+  @@index([id_vendedor], map: "idx_venda_vendedor")
+}
+
+model venda_item {
+  id_venda_item           BigInt   @id @default(autoincrement())
+  id_venda                BigInt
+  id_produto              Int
+  quantidade              Int
+  preco_unitario_snapshot Decimal  @db.Decimal(10, 2)
+  subtotal                Decimal  @db.Decimal(10, 2)
+  criado_em               DateTime @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime @default(now()) @db.DateTime(0)
+  produto                 produto  @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_venda_item_produto")
+  venda                   venda    @relation(fields: [id_venda], references: [id_venda], onDelete: Cascade, onUpdate: Restrict, map: "fk_venda_item_venda")
+
+  @@unique([id_venda, id_produto], map: "uq_venda_item_produto")
+  @@index([id_produto], map: "idx_venda_item_produto")
+  @@index([id_venda], map: "idx_venda_item_venda")
+}
+
+model vendedor {
+  id_vendedor               Int                        @id @unique(map: "id_vendedor_UNIQUE") @default(autoincrement())
+  nome_completo_vendedor    String                     @db.VarChar(150)
+  email_vendedor            String                     @unique(map: "email_vendedor_UNIQUE") @db.VarChar(150)
+  meta_mensal_vendedor      Decimal                    @db.Decimal(10, 2)
+  taxa_comissao_vendedor    Decimal                    @db.Decimal(5, 2)
+  foto_url_vendedor         String?                    @db.VarChar(255)
+  ativo_vendedor            Boolean                    @default(true)
+  data_criacao_vendedor     DateTime?                  @db.DateTime(0)
+  data_atualizacao_vendedor DateTime?                  @db.DateTime(0)
+  comissao_mensal_vendedor  comissao_mensal_vendedor[]
+  movimentacao_estoque      movimentacao_estoque[]
+  venda                     venda[]
+
+  @@index([ativo_vendedor], map: "idx_vendedor_ativo")
+  @@index([data_criacao_vendedor, data_atualizacao_vendedor], map: "idx_vendedor_datas")
+}
+
+model voucher {
+  id_voucher                                                           Int                    @id @unique(map: "id_voucher_UNIQUE") @default(autoincrement())
+  codigo_voucher                                                       String                 @unique(map: "codigo_voucher_UNIQUE") @db.VarChar(45)
+  porcentagem_desconto_voucher                                         Int
+  data_inicio_voucher                                                  DateTime               @db.Date
+  data_validade_voucher                                                DateTime               @db.Date
+  descricao_voucher                                                    String?                @db.VarChar(250)
+  status_voucher                                                       voucher_status_voucher @default(ATIVO)
+  criado_em                                                            DateTime?              @db.DateTime(0)
+  atualizado_em                                                        DateTime?              @db.DateTime(0)
+  criado_por_id_administrador                                          Int?
+  atualizado_por_id_administrador                                      Int?
+  administrador_voucher_atualizado_por_id_administradorToadministrador administrador?         @relation("voucher_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_voucher_atualizado_por_admin")
+  administrador_voucher_criado_por_id_administradorToadministrador     administrador?         @relation("voucher_criado_por_id_administradorToadministrador", fields: [criado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_voucher_criado_por_admin")
+
+  @@index([atualizado_por_id_administrador], map: "idx_voucher_atualizado_por_admin")
+  @@index([criado_por_id_administrador], map: "idx_voucher_criado_por_admin")
+  @@index([status_voucher, data_validade_voucher], map: "idx_voucher_status_validade")
+}
+
+enum aceite_termos_usuario_tipo {
+  ADMINISTRADOR
+  VENDEDOR
+  COMPRADOR
+}
+
+enum carrinho_comprador_tipo {
+  COMPRADOR
+}
+
+enum geracao_relatorio_tipo_relatorio {
+  VENDAS_MENSAIS_PDF
+  INVENTARIO_ESTOQUE_EXCEL
+  DESEMPENHO_VENDEDORES_PDF
+  MOVIMENTACOES_ESTOQUE_EXCEL
+}
+
+enum token_recuperacao_senha_usuario_tipo {
+  ADMINISTRADOR
+  VENDEDOR
+  COMPRADOR
+}
+
+enum movimentacao_estoque_tipo_movimentacao {
+  ENTRADA
+  SAIDA
+  AJUSTE
+}
+
+enum aceite_termos_documento_tipo {
+  TERMOS_USO
+  POLITICA_PRIVACIDADE
+}
+
+enum audit_log_acao {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum relatorio_desempenho_vendedores_formato_arquivo {
+  EXCEL
+}
+
+enum relatorio_inventario_estoque_formato_arquivo {
+  EXCEL
+}
+
+enum relatorio_movimentacoes_estoque_formato_arquivo {
+  EXCEL
+}
+
+enum relatorio_vendas_mensais_formato_arquivo {
+  EXCEL
+}
+
+enum audit_log_usuario_tipo {
+  ADMINISTRADOR
+  VENDEDOR
+  COMPRADOR
+  SISTEMA
+}
+
+enum carrinho_status_carrinho {
+  ABERTO
+  CONVERTIDO_EM_PEDIDO
+  CANCELADO
+}
+
+enum categoria_tipo_categoria {
+  PRODUTO
+  SERVICO
+}
+
+enum cliente_status_cliente {
+  ATIVO
+  INATIVO
+}
+
+enum relatorio_vendas_mensais_granularidade_resumo {
+  DIA
+}
+
+enum categoria_status_categoria {
+  DISPONIVEL
+  INATIVO
+}
+
+enum movimentacao_estoque_responsavel_tipo {
+  ADMINISTRADOR
+  VENDEDOR
+}
+
+enum venda_status_pagamento {
+  AGUARDANDO
+  APROVADO
+  RECUSADO
+  CANCELADO
+  ESTORNADO
+}
+
+enum voucher_status_voucher {
+  ATIVO
+  EXPIRADO
+  INATIVO
+}
+
+enum produto_status_produto {
+  BAIXO_ESTOQUE
+  INDISPONIVEL
+  DISPONIVEL
+  INATIVO
 }
