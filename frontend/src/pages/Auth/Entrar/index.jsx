@@ -11,41 +11,20 @@ import { MdEmail } from "react-icons/md";
 import { FaLock } from "react-icons/fa";
 
 export default function Entrar() {
-	const [formData, setFormData] = useState(() => ({
-		email: localStorage.getItem("userEmail") || "",
+	const [formData, setFormData] = useState({
+		email: "",
 		password: "",
-	}));
+	});
 	const navigate = useNavigate();
 
 	const handleChange = (nameInput, value) => {
 		setFormData((prev) => ({ ...prev, [nameInput]: value }));
 	};
 
-	const handleSubmit = async (e) => {
+	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		try {
-			const response = await fetch("http://localhost:3000/api/auth/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(formData),
-			});
-
-			if (!response.ok) {
-				const errorResponse = await response.json();
-				throw new Error(errorResponse.message);
-			}
-
-			const data = await response.json();
-
-			localStorage.setItem("user", data.user);
-			localStorage.setItem("token", data.token);
-			navigate("/dashboard");
-		} catch (error) {
-			alert(error.message);
-		}
+		navigate("/dashboard");
 	};
 
 	return (

@@ -14,7 +14,6 @@ import Vouchers from "../pages/Vouchers";
 import Configuracoes from "../pages/Configuracoes";
 import Perfil from "../pages/Perfil";
 import EsqueceuSenha from "../pages/Auth/EsqueceuSenha";
-import RedefinirSenha from "../pages/Auth/RedefinirSenha";
 
 export default function Router() {
 	return (
@@ -33,11 +32,6 @@ export default function Router() {
 				<Route
 					path="esqueceu-senha"
 					element={<EsqueceuSenha />}
-				/>
-
-				<Route
-					path="redefinir-senha"
-					element={<RedefinirSenha />}
 				/>
 
 				<Route element={<SidebarLayout />}>
