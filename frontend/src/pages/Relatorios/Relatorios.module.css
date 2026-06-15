@@ -1,0 +1,333 @@
+.page {
+	flex: 1;
+	padding: 1.5rem 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	background: #f9f9f9;
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.breadcrumb {
+	font-size: 0.8rem;
+	color: #888;
+}
+
+/* ── topo ──────────────────────────────────────────── */
+.topoRow {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.titulo {
+	font-size: 1.75rem;
+	font-weight: 700;
+	color: #111;
+}
+
+.subtitulo {
+	font-size: 0.875rem;
+	color: #666;
+	margin-top: 2px;
+}
+
+/* ── filtro período ────────────────────────────────── */
+.filtroPeriodo {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.875rem 1.25rem;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	flex-wrap: wrap;
+}
+
+.filtroPeriodoLabel {
+	font-size: 0.8rem;
+	color: #888;
+	white-space: nowrap;
+}
+
+.dropWrap {
+	position: relative;
+}
+
+.periodoBtn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #333;
+	white-space: nowrap;
+}
+
+.periodoBtn:hover { border-color: #729aff; }
+
+.periodoMenu {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+	z-index: 100;
+	list-style: none;
+	min-width: 200px;
+	padding: 4px 0;
+}
+
+.periodoMenu li button {
+	width: 100%;
+	text-align: left;
+	padding: 8px 14px;
+	font-size: 0.85rem;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #333;
+}
+
+.periodoMenu li button:hover { background: #f3f4f6; }
+
+.dataGrupo {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.dataLabel {
+	font-size: 0.8rem;
+	color: #888;
+	white-space: nowrap;
+}
+
+.dataBtn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #333;
+	white-space: nowrap;
+}
+
+.dataBtn:hover { border-color: #729aff; }
+
+.filtrarBtn {
+	padding: 7px 20px;
+	background: #729aff;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.filtrarBtn:hover { background: #5a7bce; }
+
+/* ── calendário ────────────────────────────────────── */
+.cal {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+	z-index: 200;
+	padding: 12px;
+	width: 240px;
+}
+
+.calHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.calHeader span {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: #111;
+}
+
+.calHeader button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #555;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 1rem;
+}
+
+.calHeader button:hover { background: #f3f4f6; }
+
+.calGrid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+
+.calDow {
+	text-align: center;
+	font-size: 0.7rem;
+	color: #888;
+	padding: 4px 0;
+}
+
+.calDay {
+	text-align: center;
+	font-size: 0.8rem;
+	padding: 5px 2px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	border-radius: 6px;
+	color: #333;
+}
+
+.calDay:hover { background: #eff3ff; }
+
+.calDaySel {
+	background: #729aff !important;
+	color: #fff !important;
+	font-weight: 600;
+}
+
+/* ── lista de relatórios ───────────────────────────── */
+.listaCard {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 0.5rem 1.75rem;
+}
+
+.relatorioRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1.25rem 0;
+}
+
+.relatorioInfo h3 {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #111;
+	margin-bottom: 4px;
+}
+
+.relatorioInfo p {
+	font-size: 0.8rem;
+	color: #888;
+}
+
+.gerarBtn {
+	padding: 8px 28px;
+	background: #729aff;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.gerarBtn:hover { background: #5a7bce; }
+.gerarBtn:active { transform: scale(0.97); }
+
+.divisor {
+	border: none;
+	border-top: 1px solid #f0f0f0;
+	margin: 0;
+}
+
+/* ── resumo ────────────────────────────────────────── */
+.resumoCard {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 1.25rem 1.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.resumoTitulo {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #111;
+}
+
+.resumoVazio {
+	font-size: 0.875rem;
+	color: #aaa;
+}
+
+.resumoInfo {
+	font-size: 0.875rem;
+	color: #555;
+}
+
+.historicoLista {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.historicoItem {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	font-size: 0.8rem;
+	color: #555;
+	padding: 4px 0;
+	border-bottom: 1px solid #f5f5f5;
+}
+
+.historicoArquivo {
+	font-family: monospace;
+	color: #729aff;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.historicoHora {
+	color: #aaa;
+	flex-shrink: 0;
+}
+
+.linkHistorico {
+	background: none;
+	border: none;
+	color: #729aff;
+	font-size: 0.875rem;
+	cursor: pointer;
+	padding: 0;
+	text-decoration: underline;
+	text-align: left;
+}
+
+.linkHistorico:hover { color: #5a7bce; }
