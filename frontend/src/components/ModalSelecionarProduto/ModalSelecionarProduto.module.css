@@ -1,0 +1,33 @@
+.bg { position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000; }
+.modal { background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;gap:1.25rem;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden; }
+.header { display:flex;align-items:flex-start;justify-content:space-between; }
+.header h2 { font-size:1.5rem;font-weight:700;color:#111; }
+.header p { font-size:.875rem;color:#888;margin-top:4px; }
+.closeBtn { background:none;border:none;cursor:pointer;color:#888; }
+.closeBtn:hover { color:#111; }
+.produtoLabel { font-size:1rem;font-weight:500;color:#111; }
+.buscaWrap { position:relative;display:flex;align-items:center; }
+.busca { width:100%;padding:10px 36px 10px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:.875rem;outline:none; }
+.busca:focus { border-color:#729aff; }
+.buscaIcon { position:absolute;right:12px;color:#aaa;pointer-events:none; }
+.tableWrap { flex:1;overflow-y:auto;border:1px solid #e5e7eb;border-radius:10px; }
+.table { width:100%;border-collapse:collapse;font-size:.875rem; }
+.table thead tr { background:#f9fafb;border-bottom:1px solid #e5e7eb; }
+.table th { padding:10px 14px;text-align:left;font-weight:500;color:#888;font-size:.8rem; }
+.row { cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .1s; }
+.row:last-child { border-bottom:none; }
+.row:hover { background:#f9fafb; }
+.rowSel { background:#eff3ff !important; }
+.table td { padding:12px 14px;color:#333; }
+.tdNome { display:flex;align-items:center;gap:10px; }
+.thumb { width:44px;height:44px;border-radius:8px;overflow:hidden;background:#e5e7eb;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.thumb img { width:100%;height:100%;object-fit:cover; }
+.thumbLetra { font-size:1.1rem;font-weight:700;color:#729aff; }
+.tdEstoque { font-weight:600;color:#111; }
+.vazio { text-align:center;color:#aaa;padding:2rem !important; }
+.info { text-align:center;color:#888;padding:2rem;font-size:.875rem; }
+.erro { text-align:center;color:#dc2626;padding:2rem;font-size:.875rem; }
+.footer { display:flex;justify-content:flex-end; }
+.confirmarBtn { padding:10px 28px;background:#729aff;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:500;cursor:pointer; }
+.confirmarBtn:hover:not(:disabled) { background:#5a7bce; }
+.confirmarBtn:disabled { opacity:.45;cursor:default; }
