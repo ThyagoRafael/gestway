@@ -5,5 +5,6 @@ const vendedorRoutes = Router();
 
 vendedorRoutes.post("/", vendedorController.create);
 vendedorRoutes.get("/", vendedorController.list);
+vendedorRoutes.patch("/:vendedorId", vendedorController.update);
 
 export { vendedorRoutes };

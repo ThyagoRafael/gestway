@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
-import { createVendedorSchema } from "../validations/vendedor.validation.js";
+import { createVendedorSchema, updateVendedorSchema } from "../validations/vendedor.validation.js";
 import { AppError } from "../errors/AppError.js";
+import { mapFields } from "../helpers/mapField.js";
 
 class VendedorController {
 	async create(req, res) {
@@ -32,6 +33,38 @@ class VendedorController {
 		const vendedores = await prisma.vendedor.findMany();
 
 		res.status(200).json(vendedores);
+	}
+
+	async update(req, res) {
+		const vendedorId = Number(req.params.vendedorId);
+		const bodyData = updateVendedorSchema.parse(req.body);
+		const vendedorMapField = {
+			name: "nome_completo_vendedor",
+			email: "email_vendedor",
+			monthlyTarget: "meta_mensal_vendedor",
+			commissionRate: "taxa_comissao_vendedor",
+		};
+
+		const prismaData = mapFields(bodyData, vendedorMapField);
+
+		const vendedor = await prisma.vendedor.findUnique({
+			where: {
+				id_vendedor: vendedorId,
+			},
+		});
+
+		if (!vendedor) {
+			throw new AppError("Vendedor não encontrado", 404);
+		}
+
+		const updatedVendedor = await prisma.vendedor.update({
+			where: {
+				id_vendedor: vendedorId,
+			},
+			data: prismaData,
+		});
+
+		res.status(200).json(updatedVendedor);
 	}
 }
 
