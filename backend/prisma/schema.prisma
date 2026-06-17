@@ -274,19 +274,16 @@ model movimentacao_estoque {
 model produto {
   id_produto               Int                    @id @unique(map: "idproduto_UNIQUE") @default(autoincrement())
   nome_produto             String                 @db.VarChar(150)
-  preco_venda_produto      Decimal                @db.Decimal(10, 2)
-  estoque_inicial_produto  Int
-  estoque_minimo_produto   Int
+  preco_produto            Decimal                @db.Decimal(10, 2)
   imagem_produto           String?                @db.VarChar(255)
   descricao_produto        String?                @db.VarChar(250)
   id_categoria             Int?
-  sku_produto              String?                @unique(map: "uq_produto_sku") @db.VarChar(64)
   status_produto           produto_status_produto @default(DISPONIVEL)
   ativo_produto            Boolean                @default(true)
   controla_estoque_produto Boolean                @default(true)
-  estoque_atual_produto    Int?
-  data_criacao_produto     DateTime?              @db.DateTime(0)
-  data_atualizacao_produto DateTime?              @db.DateTime(0)
+  estoque_produto          Int
+  data_criacao_produto     DateTime               @default(now()) @db.DateTime(0)
+  data_atualizacao_produto DateTime               @updatedAt @db.DateTime(0)
   carrinho_item            carrinho_item[]
   movimentacao_estoque     movimentacao_estoque[]
   categoria                categoria?             @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_produto_categoria")
@@ -294,7 +291,6 @@ model produto {
 
   @@index([ativo_produto], map: "idx_produto_ativo")
   @@index([id_categoria], map: "idx_produto_categoria")
-  @@index([estoque_atual_produto, estoque_minimo_produto], map: "idx_produto_estoque")
   @@index([status_produto], map: "idx_produto_status")
 }
 
@@ -457,8 +453,8 @@ model voucher {
   data_validade_voucher                                                DateTime               @db.Date
   descricao_voucher                                                    String?                @db.VarChar(250)
   status_voucher                                                       voucher_status_voucher @default(ATIVO)
-  criado_em                                                            DateTime?              @db.DateTime(0)
-  atualizado_em                                                        DateTime?              @db.DateTime(0)
+  criado_em                                                            DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em                                                        DateTime               @updatedAt @db.DateTime(0)
   criado_por_id_administrador                                          Int?
   atualizado_por_id_administrador                                      Int?
   administrador_voucher_atualizado_por_id_administradorToadministrador administrador?         @relation("voucher_atualizado_por_id_administradorToadministrador", fields: [atualizado_por_id_administrador], references: [id_administrador], onUpdate: Restrict, map: "fk_voucher_atualizado_por_admin")
