@@ -27,6 +27,12 @@ class VendedorController {
 
 		res.status(201).json(newVendedor);
 	}
+
+	async list(req, res) {
+		const vendedores = await prisma.vendedor.findMany();
+
+		res.status(200).json(vendedores);
+	}
 }
 
 export default new VendedorController();
