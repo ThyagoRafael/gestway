@@ -1,11 +1,25 @@
+.form-group-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
 .form-group {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-
-	border: 1px solid;
+	border: 1px solid #ccc;
 	border-radius: 16px;
 	padding: 0 1rem;
+	transition: border-color 0.2s;
+}
+
+.form-group:focus-within {
+	border-color: #555;
+}
+
+.form-group--error {
+	border-color: #e53e3e !important;
 }
 
 .form-group i {
@@ -23,11 +37,11 @@
 	width: 100%;
 	outline: none;
 	border: none;
+	background: transparent;
 }
 
 .input-field label {
 	font-size: 1rem;
-
 	position: absolute;
 	left: 8px;
 	top: 50%;
@@ -35,10 +49,33 @@
 	pointer-events: none;
 	background-color: #ffffff;
 	transition: 0.2s ease;
+	color: #888;
 }
 
 .input-field input:focus + label,
 .input-field input:not(:placeholder-shown) + label {
 	top: 0;
 	font-size: 0.75rem;
+	color: #555;
+}
+
+.char-count {
+	font-size: 0.72rem;
+	color: #aaa;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.error-msg {
+	font-size: 0.78rem;
+	color: #e53e3e;
+	padding-left: 1rem;
+	margin: 0;
+}
+
+.hint-msg {
+	font-size: 0.78rem;
+	color: #888;
+	padding-left: 1rem;
+	margin: 0;
 }
