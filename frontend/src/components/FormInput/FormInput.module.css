@@ -1,17 +1,35 @@
+.form-group-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
 .form-group {
 	display: flex;
 	align-items: center;
-	gap: 0.25rem;
-
-	border: 1px solid;
+	gap: 0.4rem;
+	border: 1px solid #ccc;
 	border-radius: 16px;
 	padding: 0 1rem;
+	transition: border-color 0.2s;
 }
 
-.form-group i {
-	font-size: 1.2rem;
+.form-group:focus-within {
+	border-color: #555;
 }
 
+.form-group--error {
+	border-color: #e53e3e !important;
+}
+
+.icon {
+	display: flex;
+	align-items: center;
+	color: #555;
+	flex-shrink: 0;
+}
+
+/* ── campo flutuante ────────────────────────────────── */
 .input-field {
 	position: relative;
 	width: 100%;
@@ -19,26 +37,64 @@
 
 .input-field input {
 	font-size: 1rem;
-	padding: 1rem 0.5rem;
+	padding: 1rem 0.5rem 0.4rem;
 	width: 100%;
 	outline: none;
 	border: none;
+	background: transparent;
+	color: #111;
 }
 
+/* label flutua quando input tem conteúdo ou está focado */
 .input-field label {
 	font-size: 1rem;
-
 	position: absolute;
 	left: 8px;
 	top: 50%;
 	transform: translateY(-50%);
 	pointer-events: none;
 	background-color: #ffffff;
-	transition: 0.2s ease;
+	padding: 0 2px;
+	transition: 0.15s ease;
+	color: #888;
+	line-height: 1;
 }
 
+/* placeholder=" " (padrão) — label flutua quando digitado ou focado */
 .input-field input:focus + label,
 .input-field input:not(:placeholder-shown) + label {
-	top: 0;
-	font-size: 0.75rem;
+	top: 6px;
+	font-size: 0.72rem;
+	color: #555;
+	transform: none;
+}
+
+/* quando há placeholder real (ex: telefone), label fica sempre em cima */
+.has-placeholder label {
+	top: 6px;
+	font-size: 0.72rem;
+	color: #555;
+	transform: none;
+}
+
+/* placeholder cinza para inputs com texto de apoio */
+.input-field input::placeholder {
+	color: #bbb;
+	font-size: 0.95rem;
+}
+
+/* ── contador ────────────────────────────────────────── */
+.char-count {
+	font-size: 0.72rem;
+	color: #bbb;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+/* ── erro embaixo ────────────────────────────────────── */
+.error-msg {
+	font-size: 0.78rem;
+	color: #e53e3e;
+	padding-left: 1rem;
+	margin: 0;
 }
