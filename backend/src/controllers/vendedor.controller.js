@@ -24,13 +24,38 @@ class VendedorController {
 				meta_mensal_vendedor: bodyData.monthlyTarget,
 				taxa_comissao_vendedor: bodyData.commissionRate,
 			},
+			include: {
+				comissao_mensal_vendedor: {
+					select: {
+						valor_comissao: true,
+					},
+				},
+				venda: {
+					select: {
+						total_liquido: true,
+					},
+				},
+			},
 		});
 
 		res.status(201).json(newVendedor);
 	}
 
 	async list(req, res) {
-		const vendedores = await prisma.vendedor.findMany();
+		const vendedores = await prisma.vendedor.findMany({
+			include: {
+				comissao_mensal_vendedor: {
+					select: {
+						valor_comissao: true,
+					},
+				},
+				venda: {
+					select: {
+						total_liquido: true,
+					},
+				},
+			},
+		});
 
 		res.status(200).json(vendedores);
 	}
@@ -62,6 +87,18 @@ class VendedorController {
 				id_vendedor: vendedorId,
 			},
 			data: prismaData,
+			include: {
+				comissao_mensal_vendedor: {
+					select: {
+						valor_comissao: true,
+					},
+				},
+				venda: {
+					select: {
+						total_liquido: true,
+					},
+				},
+			},
 		});
 
 		res.status(200).json(updatedVendedor);
