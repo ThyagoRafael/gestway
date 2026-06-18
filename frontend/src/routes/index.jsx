@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "../pages/LandingPage";
 import MainLayout from "../templates/MainLayout";
 import SidebarLayout from "../templates/SidebarLayout";
 import Dashboard from "../pages/Dashboard";
@@ -19,6 +20,7 @@ import RedefinirSenha from "../pages/Auth/RedefinirSenha";
 export default function Router() {
 	return (
 		<Routes>
+			<Route path="/" element={<LandingPage />}/>
 			<Route element={<MainLayout />}>
 				<Route
 					path="entrar"
