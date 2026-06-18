@@ -149,7 +149,7 @@ model cliente {
   telefone_cliente String                 @db.VarChar(11)
   status_cliente   cliente_status_cliente @default(ATIVO)
   criado_em        DateTime               @default(now()) @db.DateTime(0)
-  atualizado_em    DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em    DateTime               @updatedAt @db.DateTime(0)
   carrinho         carrinho[]
   venda            venda[]
 
@@ -165,7 +165,7 @@ model comissao_mensal_vendedor {
   id_status_comissao_mensal  Int                        @default(1) @db.UnsignedTinyInt
   observacao                 String?                    @db.VarChar(255)
   criado_em                  DateTime                   @default(now()) @db.DateTime(0)
-  atualizado_em              DateTime                   @default(now()) @db.DateTime(0)
+  atualizado_em              DateTime                   @updatedAt @db.DateTime(0)
   ref_status_comissao_mensal ref_status_comissao_mensal @relation(fields: [id_status_comissao_mensal], references: [id_status_comissao_mensal], onUpdate: Restrict, map: "fk_comissao_mensal_status")
   vendedor                   vendedor                   @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_comissao_mensal_vendedor")
 
@@ -435,8 +435,8 @@ model vendedor {
   taxa_comissao_vendedor    Decimal                    @db.Decimal(5, 2)
   foto_url_vendedor         String?                    @db.VarChar(255)
   ativo_vendedor            Boolean                    @default(true)
-  data_criacao_vendedor     DateTime?                  @db.DateTime(0)
-  data_atualizacao_vendedor DateTime?                  @db.DateTime(0)
+  data_criacao_vendedor     DateTime                   @default(now()) @db.DateTime(0)
+  data_atualizacao_vendedor DateTime                   @updatedAt @db.DateTime(0)
   comissao_mensal_vendedor  comissao_mensal_vendedor[]
   movimentacao_estoque      movimentacao_estoque[]
   venda                     venda[]
