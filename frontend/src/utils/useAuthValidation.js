@@ -59,3 +59,33 @@ export function validarTelefone(tel) {
 	if (nums.length < 10) return "Telefone inválido. Ex: (99) 99999-9999";
 	return null;
 }
+
+
+// ── CPF ─────────────────────────────────────────────────────────────────────
+export function formatarCPF(valor) {
+	const nums = valor.replace(/\D/g, "").slice(0, 11);
+	if (nums.length <= 3)  return nums;
+	if (nums.length <= 6)  return `${nums.slice(0,3)}.${nums.slice(3)}`;
+	if (nums.length <= 9)  return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6)}`;
+	return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6,9)}-${nums.slice(9)}`;
+}
+
+export function validarCPF(cpf) {
+	const nums = cpf.replace(/\D/g, "");
+	if (nums.length !== 11) return "CPF inválido.";
+	if (/^(\d)\1{10}$/.test(nums)) return "CPF inválido.";
+
+	const calc = (n) => {
+		let sum = 0;
+		for (let i = 0; i < n; i++) sum += parseInt(nums[i]) * (n + 1 - i);
+		const r = (sum * 10) % 11;
+		return r === 10 || r === 11 ? 0 : r;
+	};
+
+	if (calc(9) !== parseInt(nums[9]) || calc(10) !== parseInt(nums[10]))
+		return "CPF inválido.";
+
+	return null;
+}
+
+export const CPF_MAX = 14; // 000.000.000-00
