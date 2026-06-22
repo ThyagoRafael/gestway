@@ -27,13 +27,21 @@ class AuthController {
 
 		const passwordHash = await encryptPassword(bodyData.password);
 
-		await prisma.usuario.create({
-			data: {
-				nome_completo_usuario: bodyData.fullName,
-				email_usuario: bodyData.email,
-				senha_hash_usuario: passwordHash,
-				telefone_usuario: bodyData.phoneNumber,
-			},
+		await prisma.$transaction(async (tx) => {
+			const usuario = await tx.usuario.create({
+				data: {
+					nome_completo_usuario: bodyData.fullName,
+					email_usuario: bodyData.email,
+					senha_hash_usuario: passwordHash,
+					telefone_usuario: bodyData.phoneNumber,
+				},
+			});
+
+			await tx.cliente.create({
+				data: {
+					id_usuario: usuario.id_usuario,
+				},
+			});
 		});
 
 		res.status(201).json({ email: bodyData.email });
