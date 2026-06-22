@@ -26,6 +26,7 @@ model usuario {
   senha_hash_usuario    String         @db.VarChar(255)
   foto_url_usuario      String?        @db.VarChar(255)
   administrador         administrador?
+  cliente               cliente?
 }
 
 model administrador {
@@ -96,18 +97,18 @@ model carrinho {
   id_carrinho     BigInt                   @id @default(autoincrement())
   comprador_tipo  carrinho_comprador_tipo  @default(COMPRADOR)
   comprador_id    Int
-  cpf_cliente     String?                  @db.Char(11)
+  id_cliente      Int?
   status_carrinho carrinho_status_carrinho @default(ABERTO)
   criado_em       DateTime                 @default(now()) @db.DateTime(0)
   atualizado_em   DateTime                 @default(now()) @db.DateTime(0)
-  cliente         cliente?                 @relation(fields: [cpf_cliente], references: [cpf_cliente], onDelete: Restrict, onUpdate: Restrict, map: "fk_carrinho_cliente")
+  cliente         cliente?                 @relation(fields: [id_cliente], references: [id_cliente], onDelete: Restrict, onUpdate: Restrict, map: "fk_carrinho_cliente")
   carrinho_item   carrinho_item[]
   venda           venda[]
 
   @@index([comprador_tipo, comprador_id], map: "idx_carrinho_comprador")
   @@index([comprador_tipo, comprador_id, status_carrinho], map: "idx_carrinho_comprador_status")
   @@index([criado_em, atualizado_em], map: "idx_carrinho_datas")
-  @@index([cpf_cliente], map: "idx_carrinho_id_cliente")
+  @@index([id_cliente], map: "idx_carrinho_id_cliente")
   @@index([status_carrinho], map: "idx_carrinho_status")
 }
 
@@ -143,15 +144,14 @@ model categoria {
 }
 
 model cliente {
-  cpf_cliente      String                 @id @db.Char(11)
-  nome_cliente     String                 @db.VarChar(150)
-  email_cliente    String                 @unique(map: "uq_cliente_email") @db.VarChar(150)
-  telefone_cliente String                 @db.VarChar(11)
-  status_cliente   cliente_status_cliente @default(ATIVO)
-  criado_em        DateTime               @default(now()) @db.DateTime(0)
-  atualizado_em    DateTime               @updatedAt @db.DateTime(0)
-  carrinho         carrinho[]
-  venda            venda[]
+  id_cliente     Int                    @id @default(autoincrement())
+  id_usuario     Int                    @unique
+  status_cliente cliente_status_cliente @default(ATIVO)
+  criado_em      DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em  DateTime               @updatedAt @db.DateTime(0)
+  carrinho       carrinho[]
+  venda          venda[]
+  usuario        usuario                @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 
   @@index([criado_em, atualizado_em], map: "idx_cliente_datas")
   @@index([status_cliente], map: "idx_cliente_status")
@@ -253,15 +253,13 @@ model logotipo {
 }
 
 model movimentacao_estoque {
-  id_movimentacao   BigInt                                 @id @default(autoincrement())
+  id_movimentacao   Int                                    @id @default(autoincrement())
   id_produto        Int
   tipo_movimentacao movimentacao_estoque_tipo_movimentacao
   quantidade        Int
   motivo            String                                 @db.VarChar(255)
-  responsavel_tipo  movimentacao_estoque_responsavel_tipo
-  responsavel_id    Int
-  data_hora         DateTime                               @db.DateTime(0)
-  id_vendedor       Int?
+  data_hora         DateTime                               @default(now()) @db.DateTime(0)
+  id_vendedor       Int
   produto           produto                                @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_mov_produto")
   vendedor          vendedor?                              @relation(fields: [id_vendedor], references: [id_vendedor], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_vendedor")
 
@@ -389,22 +387,22 @@ model token_recuperacao_senha {
 model venda {
   id_venda         BigInt                 @id @default(autoincrement())
   numero_pedido    String                 @unique(map: "uq_venda_numero_pedido") @db.VarChar(32)
-  cpf_cliente      String                 @db.Char(11)
-  id_vendedor      Int?
+  id_cliente       Int
+  id_vendedor      Int
   id_carrinho      BigInt?
   status_pagamento venda_status_pagamento @default(AGUARDANDO)
   total_bruto      Decimal                @default(0.00) @db.Decimal(10, 2)
   total_desconto   Decimal                @default(0.00) @db.Decimal(10, 2)
   total_liquido    Decimal                @default(0.00) @db.Decimal(10, 2)
   criado_em        DateTime               @default(now()) @db.DateTime(0)
-  atualizado_em    DateTime               @default(now()) @db.DateTime(0)
+  atualizado_em    DateTime               @updatedAt @db.DateTime(0)
   carrinho         carrinho?              @relation(fields: [id_carrinho], references: [id_carrinho], onUpdate: Restrict, map: "fk_venda_carrinho")
-  cliente          cliente                @relation(fields: [cpf_cliente], references: [cpf_cliente], onUpdate: Restrict, map: "fk_venda_cliente")
+  cliente          cliente                @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_venda_cliente")
   vendedor         vendedor?              @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_venda_vendedor")
   venda_item       venda_item[]
 
   @@index([id_carrinho], map: "idx_venda_carrinho")
-  @@index([cpf_cliente], map: "idx_venda_cliente")
+  @@index([id_cliente], map: "idx_venda_cliente")
   @@index([criado_em, atualizado_em], map: "idx_venda_datas")
   @@index([status_pagamento], map: "idx_venda_status")
   @@index([id_vendedor], map: "idx_venda_vendedor")
@@ -418,7 +416,7 @@ model venda_item {
   preco_unitario_snapshot Decimal  @db.Decimal(10, 2)
   subtotal                Decimal  @db.Decimal(10, 2)
   criado_em               DateTime @default(now()) @db.DateTime(0)
-  atualizado_em           DateTime @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime @updatedAt @db.DateTime(0)
   produto                 produto  @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_venda_item_produto")
   venda                   venda    @relation(fields: [id_venda], references: [id_venda], onDelete: Cascade, onUpdate: Restrict, map: "fk_venda_item_venda")
 
