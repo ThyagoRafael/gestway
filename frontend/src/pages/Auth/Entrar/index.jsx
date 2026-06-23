@@ -11,7 +11,6 @@ import FormSection     from "../../../components/FormSection";
 
 import { RULES, validarEmail } from "../../../utils/useAuthValidation";
 import { login, salvarSessao } from "../../../services/auth";
-
 import styles from "./Entrar.module.css";
 
 export default function Entrar() {
@@ -22,13 +21,15 @@ export default function Entrar() {
 	const [apiError, setApiError] = useState(null);
 	const [sucesso,  setSucesso]  = useState(null);
 
-	const navigate  = useNavigate();
-	const location  = useLocation();
+	const navigate = useNavigate();
+	const location = useLocation();
 
-	// Mostra mensagem de sucesso se veio do cadastro
 	useEffect(() => {
 		if (location.state?.cadastroSucesso) {
 			setSucesso("Conta criada com sucesso! Faça login para continuar.");
+		}
+		if (location.state?.resetSucesso) {
+			setSucesso("Senha redefinida com sucesso! Faça login.");
 		}
 	}, [location.state]);
 
@@ -40,7 +41,7 @@ export default function Entrar() {
 
 	const handleBlur = (name) => {
 		setTouched((prev) => ({ ...prev, [name]: true }));
-		const errs = validate({ ...formData });
+		const errs = validate(formData);
 		setErrors((prev) => ({ ...prev, [name]: errs[name] ?? null }));
 	};
 
@@ -64,7 +65,6 @@ export default function Entrar() {
 
 		setLoading(true);
 		setApiError(null);
-
 		try {
 			const data = await login({ email: formData.email, password: formData.password });
 			salvarSessao(data.token, data.user);
@@ -79,7 +79,6 @@ export default function Entrar() {
 	return (
 		<>
 			<BrandingSection />
-
 			<FormSection
 				title="Acesse sua plataforma"
 				footer={
@@ -113,7 +112,7 @@ export default function Entrar() {
 
 				<FormOptions>
 					<label htmlFor="remember">
-						<input type="checkbox" id="remember" name="remember"/>
+						<input type="checkbox" id="remember" name="remember" />
 						Manter conectado
 					</label>
 				</FormOptions>
