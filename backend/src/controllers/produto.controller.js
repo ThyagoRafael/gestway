@@ -46,6 +46,7 @@ class ProdutoController {
 
 	async update(req, res) {
 		const produtoId = Number(req.params.produtoId);
+		const { userId } = req.user;
 		const bodyData = updateProdutoSchema.parse(req.body);
 		const produtoFieldMap = {
 			name: "nome_produto",
@@ -67,14 +68,45 @@ class ProdutoController {
 			throw new AppError("Produto não encontrado", 404);
 		}
 
-		const updatedProduto = await prisma.produto.update({
-			where: {
-				id_produto: produtoId,
-			},
-			data: prismaData,
+		const estoqueEnviado = bodyData.stock !== undefined;
+
+		if (!estoqueEnviado) {
+			const updatedProduto = await prisma.produto.update({
+				where: {
+					id_produto: produtoId,
+				},
+				data: prismaData,
+			});
+
+			return res.status(200).json(updatedProduto);
+		}
+
+		const diferenca = bodyData.stock - produto.estoque_produto;
+
+		const updatedProduto = await prisma.$transaction(async (tx) => {
+			const updatedProduto = await tx.produto.update({
+				where: {
+					id_produto: produtoId,
+				},
+				data: prismaData,
+			});
+
+			if (diferenca !== 0) {
+				await tx.movimentacao_estoque.create({
+					data: {
+						id_produto: produtoId,
+						quantidade: Math.abs(diferenca),
+						id_vendedor: userId,
+						tipo_movimentacao: diferenca > 0 ? "ENTRADA" : "SAIDA",
+						motivo: "Correção de inventário",
+					},
+				});
+			}
+
+			return updatedProduto;
 		});
 
-		res.status(200).json(updatedProduto);
+		return res.status(200).json(updatedProduto);
 	}
 }
 
