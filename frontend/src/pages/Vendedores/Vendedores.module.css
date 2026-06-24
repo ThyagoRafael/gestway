@@ -656,6 +656,15 @@
 	flex-shrink: 0;
 }
 
+
+.toastErro {
+	border-left-color: #e53e3e;
+}
+
+.toastIconErro {
+	background: #e53e3e;
+}
+
 @keyframes slideUp {
 	from {
 		transform: translateY(20px);

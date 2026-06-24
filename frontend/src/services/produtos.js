@@ -1,36 +1,58 @@
-const USE_MOCK = true;
-const API_BASE = "http://localhost:3000/api";
+import { apiFetch } from "./api";
 
-const MOCK_PRODUTOS = [
-	{ id: 1, nome: "Galaxy S22 Ultra",         preco: 3900.00, precoOld: 4099.00, estoque: 8,  categoria: "Eletrônicos", imagem: null },
-	{ id: 2, nome: "Galaxy M13 (4GB | 64 GB)", preco: 1200.00, precoOld: 1872.00, estoque: 5,  categoria: "Eletrônicos", imagem: null },
-	{ id: 3, nome: "Galaxy M33 (4GB | 64 GB)", preco: 1200.00, precoOld: 1872.00, estoque: 2,  categoria: "Eletrônicos", imagem: null },
-	{ id: 4, nome: "Galaxy M53 (4GB | 64 GB)", preco: 1200.00, precoOld: 1872.00, estoque: 10, categoria: "Eletrônicos", imagem: null },
-	{ id: 5, nome: "Harry Potter",              preco: 50.00,   precoOld: 100.00,  estoque: 8,  categoria: "E-books",     imagem: null },
-	{ id: 6, nome: "Fundação",                  preco: 50.00,   precoOld: 100.00,  estoque: 12, categoria: "E-books",     imagem: null },
-	{ id: 7, nome: "Percy Jackson",             preco: 50.00,   precoOld: 100.00,  estoque: 6,  categoria: "E-books",     imagem: null },
-	{ id: 8, nome: "Camisa Corinthians",        preco: 180.00,  precoOld: 250.00,  estoque: 15, categoria: "Vestuário",   imagem: null },
-	{ id: 9, nome: "Kit Copo",                  preco: 30.00,   precoOld: 50.00,   estoque: 42, categoria: "Utilidades",  imagem: null },
-];
-
-export async function getProdutos(categoria = null) {
-	if (USE_MOCK) {
-		const resultado = categoria
-			? MOCK_PRODUTOS.filter(p => p.categoria === categoria)
-			: MOCK_PRODUTOS;
-		return Promise.resolve(resultado);
-	}
-	const url = categoria
-		? `${API_BASE}/produtos?categoria=${encodeURIComponent(categoria)}`
-		: `${API_BASE}/produtos`;
-	const res = await fetch(url);
-	if (!res.ok) throw new Error("Erro ao buscar produtos");
-	return res.json();
+// ── mapeamento: backend → frontend ──────────────────────────────────────────
+// Backend retorna: id_produto, nome_produto, preco_produto, descricao_produto,
+//                  estoque_produto, id_categoria, categoria{ nome_categoria }
+function calcStatus(estoque, estoqueMinimo = 0) {
+	if (estoque === null || estoque === undefined) return "disponivel";
+	if (estoque === 0)           return "indisponivel";
+	if (estoque < estoqueMinimo) return "baixo";
+	return "disponivel";
 }
 
-export async function getProdutoPorId(id) {
-	if (USE_MOCK) return Promise.resolve(MOCK_PRODUTOS.find(p => p.id === id) ?? null);
-	const res = await fetch(`${API_BASE}/produtos/${id}`);
-	if (!res.ok) throw new Error("Produto não encontrado");
-	return res.json();
+function mapProduto(p) {
+	const estoque = Number(p.estoque_produto ?? 0);
+	return {
+		id:            p.id_produto,
+		nome:          p.nome_produto,
+		preco:         Number(p.preco_produto ?? 0),
+		descricao:     p.descricao_produto ?? "",
+		estoque,
+		estoqueMinimo: 0, // backend não expõe estoque mínimo ainda
+		idCategoria:   p.id_categoria,
+		categoria:     p.categoria?.nome_categoria ?? "",
+		status:        calcStatus(estoque),
+		imagem:        null,
+	};
+}
+
+/** GET /api/produtos */
+export async function getProdutos() {
+	const data = await apiFetch("/produtos");
+	return data.map(mapProduto);
+}
+
+/**
+ * POST /api/produtos  — exige token
+ * { name, price, description, idCategoria, stock }
+ */
+export async function createProduto({ name, price, description, idCategoria, stock }) {
+	const data = await apiFetch("/produtos", {
+		method: "POST",
+		body: JSON.stringify({ name, price, description, idCategoria, stock }),
+	});
+	return mapProduto(data);
+}
+
+/**
+ * PATCH /api/produtos/:id  — exige token
+ * Campos opcionais: name, price, description, idCategoria, stock
+ * Atualizar stock gera movimentação automática no backend.
+ */
+export async function updateProduto(id, fields) {
+	const data = await apiFetch(`/produtos/${id}`, {
+		method: "PATCH",
+		body: JSON.stringify(fields),
+	});
+	return mapProduto(data);
 }
