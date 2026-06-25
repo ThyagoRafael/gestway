@@ -2,10 +2,10 @@
 import { apiFetch } from "./api";
 
 /** POST /auth/register */
-export async function register({ fullName, email, phoneNumber, password }) {
+export async function register({ fullName, email, phoneNumber, password, confirmPassword }) {
 	return apiFetch("/auth/register", {
 		method: "POST",
-		body: JSON.stringify({ fullName, email, phoneNumber, password }),
+		body: JSON.stringify({ fullName, email, phoneNumber, password, confirmPassword }),
 	});
 }
 

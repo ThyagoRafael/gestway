@@ -91,10 +91,11 @@ export default function Cadastrar() {
 			const phoneNumber = formData.phone.replace(/\D/g, "");
 
 			await register({
-				fullName:    formData.name,
-				email:       formData.email,
+				fullName:       formData.name,
+				email:          formData.email,
 				phoneNumber,
-				password:    formData.password,
+				password:       formData.password,
+				confirmPassword: formData.confirmPassword,
 			});
 
 			navigate("/entrar", { state: { cadastroSucesso: true } });
