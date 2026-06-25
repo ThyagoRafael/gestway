@@ -144,17 +144,6 @@ model categoria {
 }
 
 model cliente {
-<<<<<<< HEAD
-  cpf_cliente      String                 @id @db.Char(11)
-  nome_cliente     String                 @db.VarChar(150)
-  email_cliente    String                 @unique(map: "uq_cliente_email") @db.VarChar(150)
-  telefone_cliente String                 @db.VarChar(11)
-  status_cliente   cliente_status_cliente @default(ATIVO)
-  criado_em        DateTime               @default(now()) @db.DateTime(0)
-  atualizado_em    DateTime               @updatedAt @db.DateTime(0)
-  carrinho         carrinho[]
-  venda            venda[]
-=======
   id_cliente     Int                    @id @default(autoincrement())
   id_usuario     Int                    @unique
   status_cliente cliente_status_cliente @default(ATIVO)
@@ -163,7 +152,6 @@ model cliente {
   carrinho       carrinho[]
   venda          venda[]
   usuario        usuario                @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
->>>>>>> e43cb56 (adicionando backend da main)
 
   @@index([criado_em, atualizado_em], map: "idx_cliente_datas")
   @@index([status_cliente], map: "idx_cliente_status")
