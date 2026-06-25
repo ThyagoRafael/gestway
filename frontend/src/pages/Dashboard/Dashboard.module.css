@@ -228,3 +228,58 @@
 	height: 260px;
 	margin-top: 1rem;
 }
+
+/* ── skeleton loading ───────────────────────────────── */
+.skeleton {
+	height: 2rem;
+	background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.2s infinite;
+	border-radius: 6px;
+	width: 70%;
+	margin: 4px 0;
+}
+
+.skeletonLine {
+	height: 1rem;
+	background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.2s infinite;
+	border-radius: 4px;
+	width: 100%;
+}
+
+@keyframes shimmer {
+	0%   { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+/* ── banner de erro ─────────────────────────────────── */
+.erroBanner {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 16px;
+	background: #fef2f2;
+	border: 1px solid #fca5a5;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	color: #dc2626;
+}
+
+.erroRetry {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-left: auto;
+	padding: 5px 12px;
+	background: #fff;
+	border: 1px solid #fca5a5;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	color: #dc2626;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.erroRetry:hover { background: #fee2e2; }

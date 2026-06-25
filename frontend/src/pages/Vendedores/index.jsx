@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { FiSearch, FiChevronDown, FiCheck, FiEdit2, FiX } from "react-icons/fi";
+import { FaIdCard } from "react-icons/fa";
 import { getVendedores, createVendedor, updateVendedor } from "../../services/vendedores";
+import { formatarCPF, validarCPF, CPF_MAX } from "../../utils/useAuthValidation";
 import styles from "./Vendedores.module.css";
 
 const fmt = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -90,10 +92,18 @@ function Modal({ titulo, subtitulo, onClose, children }) {
 
 function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 	const [form, setForm] = useState(
-		inicial ?? { nome: "", email: "", metaMes: "", taxaComissao: "", foto: null }
+		inicial ?? { nome: "", email: "", cpf: "", metaMes: "", taxaComissao: "", foto: null }
 	);
+	const [cpfErro, setCpfErro] = useState(null);
 	const [fotoPreview, setFotoPreview] = useState(inicial?.foto ?? null);
+
 	const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+	const handleCpf = (e) => {
+		const formatted = formatarCPF(e.target.value);
+		setForm((f) => ({ ...f, cpf: formatted }));
+		setCpfErro(null);
+	};
 
 	const handleFoto = (e) => {
 		const file = e.target.files?.[0];
@@ -103,8 +113,15 @@ function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 		setForm((f) => ({ ...f, foto: url }));
 	};
 
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		const cpfErr = validarCPF(form.cpf);
+		if (cpfErr) { setCpfErro(cpfErr); return; }
+		onSubmit(form);
+	};
+
 	return (
-		<form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className={styles.form}>
+		<form onSubmit={handleSubmit} className={styles.form}>
 			<label className={styles.label}>
 				* Nome
 				<input className={styles.input} value={form.nome} onChange={set("nome")} required />
@@ -113,6 +130,22 @@ function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 			<label className={styles.label}>
 				* Endereço de E-mail
 				<input className={styles.input} type="email" value={form.email} onChange={set("email")} required />
+			</label>
+
+			<label className={styles.label}>
+				* CPF
+				<div style={{ position: "relative" }}>
+					<input
+						className={styles.input}
+						style={ cpfErro ? { borderColor: "#e53e3e" } : {} }
+						value={form.cpf}
+						onChange={handleCpf}
+						maxLength={CPF_MAX}
+						placeholder="000.000.000-00"
+						required
+					/>
+				</div>
+				{cpfErro && <span style={{ fontSize: "0.78rem", color: "#e53e3e", paddingLeft: "2px" }}>{cpfErro}</span>}
 			</label>
 
 			<div className={styles.formRow}>
@@ -160,22 +193,21 @@ function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 }
 
 export default function Vendedores() {
-	const [vendedores,    setVendedores]    = useState([]);
-	const [carregando,    setCarregando]    = useState(true);
-	const [busca,         setBusca]         = useState("");
-	const [filtroAtivo,   setFiltroAtivo]   = useState("todos");
-	const [filtroMeta,    setFiltroMeta]    = useState([]);
-	const [filtroComissao,setFiltroComissao]= useState([]);
-	const [filtroTemp,    setFiltroTemp]    = useState({ meta: [], comissao: [] });
-	const [modalNovo,     setModalNovo]     = useState(false);
-	const [modalEditar,   setModalEditar]   = useState(null);
-	const [toast,         setToast]         = useState(null);
-	const [loadingForm,   setLoadingForm]   = useState(false);
+	const [vendedores,     setVendedores]     = useState([]);
+	const [carregando,     setCarregando]     = useState(true);
+	const [busca,          setBusca]          = useState("");
+	const [filtroAtivo,    setFiltroAtivo]    = useState("todos");
+	const [filtroMeta,     setFiltroMeta]     = useState([]);
+	const [filtroComissao, setFiltroComissao] = useState([]);
+	const [filtroTemp,     setFiltroTemp]     = useState({ meta: [], comissao: [] });
+	const [modalNovo,      setModalNovo]      = useState(false);
+	const [modalEditar,    setModalEditar]    = useState(null);
+	const [toast,          setToast]          = useState(null);
+	const [loadingForm,    setLoadingForm]    = useState(false);
 
 	const filtroDrop = useDropdown();
 	const ativoDrop  = useDropdown();
 
-	// ── carrega lista da API ─────────────────────────────
 	const carregar = useCallback(async () => {
 		setCarregando(true);
 		try {
@@ -190,7 +222,6 @@ export default function Vendedores() {
 
 	useEffect(() => { carregar(); }, [carregar]);
 
-	// ── filtros ──────────────────────────────────────────
 	const aplicar = () => {
 		setFiltroMeta(filtroTemp.meta);
 		setFiltroComissao(filtroTemp.comissao);
@@ -214,20 +245,19 @@ export default function Vendedores() {
 	}
 	if (filtroComissao.length) dados = dados.filter((v) => filtroComissao.includes(v.statusComissao));
 
-	// ── resumo ───────────────────────────────────────────
 	const totalVendas        = vendedores.reduce((s, v) => s + v.vendaMes, 0);
 	const mediaVendas        = vendedores.length ? totalVendas / vendedores.length : 0;
 	const totalComissoes     = vendedores.reduce((s, v) => s + v.comissaoMes, 0);
 	const comissoesPendentes = vendedores.filter((v) => v.statusComissao === "pendente")
 		.reduce((s, v) => s + v.comissaoPendente, 0);
 
-	// ── criar ────────────────────────────────────────────
 	const handleNovo = async (form) => {
 		setLoadingForm(true);
 		try {
 			const novo = await createVendedor({
 				name:           form.nome,
 				email:          form.email,
+				cpf:            form.cpf,
 				monthlyTarget:  Number(form.metaMes),
 				commissionRate: Number(form.taxaComissao),
 			});
@@ -241,13 +271,13 @@ export default function Vendedores() {
 		}
 	};
 
-	// ── editar ───────────────────────────────────────────
 	const handleEditar = async (form) => {
 		setLoadingForm(true);
 		try {
 			const atualizado = await updateVendedor(modalEditar.id, {
 				name:           form.nome,
 				email:          form.email,
+				cpf:            form.cpf,
 				monthlyTarget:  Number(form.metaMes),
 				commissionRate: Number(form.taxaComissao),
 			});
@@ -269,7 +299,6 @@ export default function Vendedores() {
 			<h1 className={styles.titulo}>Vendedores</h1>
 			<p className={styles.subtitulo}>Gerenciamento de equipe, metas e desempenho</p>
 
-			{/* controles */}
 			<div className={styles.controles}>
 				<div className={styles.buscaWrap}>
 					<FiSearch size={14} className={styles.buscaIcon} />
@@ -324,12 +353,11 @@ export default function Vendedores() {
 				<button className={styles.novoBtn} onClick={() => setModalNovo(true)}>+ Novo Vendedor</button>
 			</div>
 
-			{/* tabela */}
 			<div className={styles.tableWrap}>
 				<table className={styles.table}>
 					<thead>
 						<tr>
-							<th>Vendendor</th>
+							<th>Vendedor</th>
 							<th>Venda do mês</th>
 							<th>Metas do mês</th>
 							<th>Comissões mensais</th>
@@ -366,21 +394,19 @@ export default function Vendedores() {
 				</table>
 			</div>
 
-			{/* resumo */}
 			<div className={styles.resumo}>
 				<h3 className={styles.resumoTitulo}>Resumo do Time (Mês Atual)</h3>
 				<hr className={styles.resumoHr} />
 				<div className={styles.resumoGrid}>
-					<span>Total Vendedores:</span>     <span>{vendedores.length}</span>
-					<span>Total Vendas Time:</span>    <span>{fmt(totalVendas)}</span>
-					<span>Média Vendas/Vendedor:</span><span>{fmt(mediaVendas)}</span>
-					<span>Comissões Totais Mês:</span> <span>{fmt(totalComissoes)}</span>
-					<span>Comissões Pendentes Aprovação:</span><span>{fmt(comissoesPendentes)}</span>
+					<span>Total Vendedores:</span>              <span>{vendedores.length}</span>
+					<span>Total Vendas Time:</span>             <span>{fmt(totalVendas)}</span>
+					<span>Média Vendas/Vendedor:</span>         <span>{fmt(mediaVendas)}</span>
+					<span>Comissões Totais Mês:</span>          <span>{fmt(totalComissoes)}</span>
+					<span>Comissões Pendentes Aprovação:</span> <span>{fmt(comissoesPendentes)}</span>
 				</div>
 				<button className={styles.verPedidos}>Visualizar Pedidos</button>
 			</div>
 
-			{/* modais */}
 			{modalNovo && (
 				<Modal titulo="Novo Vendedor" subtitulo="*Preencha os dados do novo Vendedor" onClose={() => setModalNovo(false)}>
 					<VendedorForm labelBtn="Adicionar Vendedor" onSubmit={handleNovo} loading={loadingForm} />
@@ -389,7 +415,14 @@ export default function Vendedores() {
 			{modalEditar && (
 				<Modal titulo="Editar Vendedor" subtitulo="*Edite os dados do Vendedor" onClose={() => setModalEditar(null)}>
 					<VendedorForm
-						inicial={{ nome: modalEditar.nome, email: modalEditar.email, metaMes: modalEditar.metaMes, taxaComissao: modalEditar.taxaComissao, foto: modalEditar.foto }}
+						inicial={{
+							nome:         modalEditar.nome,
+							email:        modalEditar.email,
+							cpf:          modalEditar.cpf ?? "",
+							metaMes:      modalEditar.metaMes,
+							taxaComissao: modalEditar.taxaComissao,
+							foto:         modalEditar.foto,
+						}}
 						labelBtn="Editar Vendedor"
 						onSubmit={handleEditar}
 						loading={loadingForm}
