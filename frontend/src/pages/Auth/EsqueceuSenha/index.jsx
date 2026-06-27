@@ -9,6 +9,7 @@ import FormInput       from "../../../components/FormInput";
 import FormSection     from "../../../components/FormSection";
 
 import { RULES, validarEmail, validarSenha } from "../../../utils/useAuthValidation";
+import { forgotPassword } from "../../../services/auth";
 import styles from "./EsqueceuSenha.module.css";
 
 export default function EsqueceuSenha() {
@@ -16,16 +17,18 @@ export default function EsqueceuSenha() {
 	const [formData, setFormData] = useState({ email: "", newPassword: "", confirmPassword: "" });
 	const [errors,   setErrors]   = useState({});
 	const [touched,  setTouched]  = useState({});
-	const navigate = useNavigate();
+	const [loading,  setLoading]  = useState(false);
+	const [apiError, setApiError] = useState(null);
 
 	const handleChange = (name, value) => {
 		setFormData((prev) => ({ ...prev, [name]: value }));
+		setApiError(null);
 		if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
 	};
 
-	const handleBlur = (name, data = formData) => {
+	const handleBlur = (name) => {
 		setTouched((prev) => ({ ...prev, [name]: true }));
-		const errs = validateStep(step, data);
+		const errs = validateStep(step, formData);
 		setErrors((prev) => ({ ...prev, [name]: errs[name] ?? null }));
 	};
 
@@ -37,13 +40,16 @@ export default function EsqueceuSenha() {
 		} else {
 			const senhaErr = validarSenha(data.newPassword);
 			if (senhaErr) e.newPassword = senhaErr;
-			if (!data.confirmPassword)              e.confirmPassword = "Confirme sua senha.";
-			else if (data.confirmPassword !== data.newPassword) e.confirmPassword = "As senhas não coincidem.";
+			if (!data.confirmPassword)
+				e.confirmPassword = "Confirme sua senha.";
+			else if (data.confirmPassword !== data.newPassword)
+				e.confirmPassword = "As senhas não coincidem.";
 		}
 		return e;
 	};
 
-	const handleEmailSubmit = (e) => {
+	// ── step 1: envia e-mail real para o backend ──────────
+	const handleEmailSubmit = async (e) => {
 		e.preventDefault();
 		const errs = validateStep(1, formData);
 		if (Object.keys(errs).length > 0) {
@@ -51,18 +57,18 @@ export default function EsqueceuSenha() {
 			setTouched({ email: true });
 			return;
 		}
-		setStep(2);
-	};
 
-	const handlePasswordSubmit = (e) => {
-		e.preventDefault();
-		const errs = validateStep(2, formData);
-		if (Object.keys(errs).length > 0) {
-			setErrors(errs);
-			setTouched({ newPassword: true, confirmPassword: true });
-			return;
+		setLoading(true);
+		setApiError(null);
+		try {
+			await forgotPassword({ email: formData.email });
+			// backend envia o e-mail com o link; avançamos para a tela de confirmação
+			setStep(2);
+		} catch (err) {
+			setApiError(err.message);
+		} finally {
+			setLoading(false);
 		}
-		navigate("/entrar");
 	};
 
 	if (step === 1) {
@@ -79,73 +85,41 @@ export default function EsqueceuSenha() {
 					}
 					handleSubmit={handleEmailSubmit}
 				>
-					<p className={styles.description}>Digite seu email para resetar sua senha.</p>
+					{apiError && <p className={styles.apiError}>{apiError}</p>}
+
+					<p className={styles.description}>
+						Digite seu e-mail e enviaremos um link para redefinir sua senha.
+					</p>
 
 					<FormInput
 						icon={<MdEmail size={16} />}
-						type="email"
-						name="email"
-						required
-						autoComplete="email"
-						label="E-mail"
-						value={formData.email}
-						handleChange={handleChange}
+						type="email" name="email" required autoComplete="email" label="E-mail"
+						value={formData.email} handleChange={handleChange}
 						maxLength={RULES.email.max}
 						error={touched.email ? errors.email : null}
 						onBlur={() => handleBlur("email")}
 					/>
 
-					<FormButton>Confirmar Email</FormButton>
+					<FormButton disabled={loading}>
+						{loading ? "Enviando..." : "Confirmar E-mail"}
+					</FormButton>
 				</FormSection>
 			</>
 		);
 	}
 
+	// step 2 — apenas confirmação visual; a redefinição real acontece em /redefinir-senha
 	return (
 		<>
 			<BrandingSection />
-			<FormSection title="Esqueceu sua senha?" footer={null} handleSubmit={handlePasswordSubmit}>
+			<FormSection title="Verifique seu e-mail" footer={<Link to="/entrar">Voltar para o login</Link>} handleSubmit={(e) => e.preventDefault()}>
 				<div className={styles.successBox}>
-					<p>E-mail confirmado com sucesso.</p>
-					<p>Agora, crie sua nova senha</p>
+					<p>E-mail enviado para <strong>{formData.email}</strong>.</p>
+					<p>Clique no link que você recebeu para criar uma nova senha.</p>
+					<p style={{ marginTop: "0.5rem", fontSize: "0.82rem", color: "#888" }}>
+						O link expira em 10 minutos.
+					</p>
 				</div>
-
-				<div className={styles.inputGroup}>
-					<FormInput
-						icon={<FaLock size={16} />}
-						type="password"
-						name="newPassword"
-						required
-						autoComplete="new-password"
-						label="Nova Senha"
-						value={formData.newPassword}
-						handleChange={handleChange}
-						maxLength={RULES.senha.max}
-						error={touched.newPassword ? errors.newPassword : null}
-						onBlur={() => handleBlur("newPassword")}
-					/>
-					<ul className={styles.requirements}>
-						<li>De 8 a 32 caracteres;</li>
-						<li>Letras maiúsculas e minúsculas;</li>
-						<li>No mínimo 1 número e 1 caractere especial (ex: !@#$)</li>
-					</ul>
-				</div>
-
-				<FormInput
-					icon={<FaCheck size={16} />}
-					type="password"
-					name="confirmPassword"
-					required
-					autoComplete="new-password"
-					label="Confirmar Senha"
-					value={formData.confirmPassword}
-					handleChange={handleChange}
-					maxLength={RULES.senha.max}
-					error={touched.confirmPassword ? errors.confirmPassword : null}
-					onBlur={() => handleBlur("confirmPassword")}
-				/>
-
-				<FormButton>Salvar nova senha</FormButton>
 			</FormSection>
 		</>
 	);

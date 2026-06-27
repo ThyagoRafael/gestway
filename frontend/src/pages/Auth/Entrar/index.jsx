@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { MdEmail } from "react-icons/md";
 import { FaLock } from "react-icons/fa";
 
@@ -10,39 +10,51 @@ import FormOptions     from "../../../components/FormOptions";
 import FormSection     from "../../../components/FormSection";
 
 import { RULES, validarEmail } from "../../../utils/useAuthValidation";
+import { login, salvarSessao } from "../../../services/auth";
+import styles from "./Entrar.module.css";
 
 export default function Entrar() {
 	const [formData, setFormData] = useState({ email: "", password: "" });
 	const [errors,   setErrors]   = useState({});
 	const [touched,  setTouched]  = useState({});
-	const navigate = useNavigate();
+	const [loading,  setLoading]  = useState(false);
+	const [apiError, setApiError] = useState(null);
+	const [sucesso,  setSucesso]  = useState(null);
 
-	// ── onChange ────────────────────────────────────────
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	useEffect(() => {
+		if (location.state?.cadastroSucesso) {
+			setSucesso("Conta criada com sucesso! Faça login para continuar.");
+		}
+		if (location.state?.resetSucesso) {
+			setSucesso("Senha redefinida com sucesso! Faça login.");
+		}
+	}, [location.state]);
+
 	const handleChange = (name, value) => {
 		setFormData((prev) => ({ ...prev, [name]: value }));
-		// limpa erro ao corrigir
+		setApiError(null);
 		if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
 	};
 
-	// ── onBlur: valida campo ao sair ─────────────────────
 	const handleBlur = (name) => {
 		setTouched((prev) => ({ ...prev, [name]: true }));
-		const errs = validate({ ...formData });
+		const errs = validate(formData);
 		setErrors((prev) => ({ ...prev, [name]: errs[name] ?? null }));
 	};
 
-	// ── validação ────────────────────────────────────────
 	const validate = (data) => {
 		const e = {};
 		const emailErr = validarEmail(data.email);
 		if (emailErr) e.email = emailErr;
-		if (!data.password)                        e.password = "Senha obrigatória.";
+		if (!data.password)                              e.password = "Senha obrigatória.";
 		else if (data.password.length < RULES.senha.min) e.password = `Mínimo ${RULES.senha.min} caracteres.`;
 		return e;
 	};
 
-	// ── submit ────────────────────────────────────────────
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const errs = validate(formData);
 		if (Object.keys(errs).length > 0) {
@@ -50,13 +62,23 @@ export default function Entrar() {
 			setTouched({ email: true, password: true });
 			return;
 		}
-		navigate("/dashboard");
+
+		setLoading(true);
+		setApiError(null);
+		try {
+			const data = await login({ email: formData.email, password: formData.password });
+			salvarSessao(data.token, data.user);
+			navigate("/dashboard");
+		} catch (err) {
+			setApiError(err.message);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
 		<>
 			<BrandingSection />
-
 			<FormSection
 				title="Acesse sua plataforma"
 				footer={
@@ -67,15 +89,13 @@ export default function Entrar() {
 				}
 				handleSubmit={handleSubmit}
 			>
+				{sucesso  && <p className={styles.sucesso}>{sucesso}</p>}
+				{apiError && <p className={styles.apiError}>{apiError}</p>}
+
 				<FormInput
 					icon={<MdEmail size={16} />}
-					type="email"
-					name="email"
-					required
-					autoComplete="email"
-					label="Email*"
-					value={formData.email}
-					handleChange={handleChange}
+					type="email" name="email" required autoComplete="email" label="Email*"
+					value={formData.email} handleChange={handleChange}
 					maxLength={RULES.email.max}
 					error={touched.email ? errors.email : null}
 					onBlur={() => handleBlur("email")}
@@ -83,13 +103,8 @@ export default function Entrar() {
 
 				<FormInput
 					icon={<FaLock size={16} />}
-					type="password"
-					name="password"
-					required
-					autoComplete="current-password"
-					label="Senha*"
-					value={formData.password}
-					handleChange={handleChange}
+					type="password" name="password" required autoComplete="current-password" label="Senha*"
+					value={formData.password} handleChange={handleChange}
 					maxLength={RULES.senha.max}
 					error={touched.password ? errors.password : null}
 					onBlur={() => handleBlur("password")}
@@ -102,7 +117,9 @@ export default function Entrar() {
 					</label>
 				</FormOptions>
 
-				<FormButton>Entrar</FormButton>
+				<FormButton disabled={loading}>
+					{loading ? "Entrando..." : "Entrar"}
+				</FormButton>
 			</FormSection>
 		</>
 	);

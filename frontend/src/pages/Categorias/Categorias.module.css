@@ -457,6 +457,13 @@
 	flex-shrink: 0;
 }
 
+
+/* ── toast erro ─────────────────────────────────────── */
+.toastErro     { border-left-color: #e53e3e; }
+.toastIconErro { background: #e53e3e; }
+
+
+
 @keyframes slideUp {
 	from { transform: translateY(20px); opacity: 0; }
 	to   { transform: translateY(0);    opacity: 1; }

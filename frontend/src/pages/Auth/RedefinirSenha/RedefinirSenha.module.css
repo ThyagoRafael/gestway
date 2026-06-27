@@ -1,14 +1,10 @@
-.successBox {
-	border: 1.5px solid #4caf91;
-	border-radius: 12px;
-	padding: 1rem 1.25rem;
-	background-color: #ffffff;
-	line-height: 1.5;
-}
-
-.successBox p {
-	font-size: 0.95rem;
-	color: #333;
+.apiError {
+	background: #fee2e2;
+	border: 1px solid #fca5a5;
+	border-radius: 8px;
+	padding: 10px 14px;
+	font-size: 0.875rem;
+	color: #dc2626;
 }
 
 .inputGroup {
@@ -35,6 +31,4 @@
 	left: 0;
 }
 
-.requirements li + li {
-	margin-top: 2px;
-}
+.requirements li + li { margin-top: 2px; }

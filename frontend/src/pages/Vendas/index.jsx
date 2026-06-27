@@ -1,13 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { FiSearch, FiChevronDown, FiChevronUp, FiCalendar, FiCheck, FiChevronsLeft, FiChevronsRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { getVendas } from "../../services/vendas";
 import styles from "./Vendas.module.css";
 
-// ── dados mock ─────────────────────────────────────────────────────────────
-const VENDAS_MOCK = [
-	{ id: "••••••••••••••••••••", status: "Recusado",   produto: "Kit Copo",          vendedor: "Pablo C.",   cliente: "Romulus",     criadoEm: "17/03/2026 - 13:03", atualizadoEm: "17/03/2026 - 13:03" },
-	{ id: "••••••••••••••••••••", status: "Aprovado",   produto: "Camisa Corinthians", vendedor: "Thyago C.",  cliente: "João Silva",  criadoEm: "18/03/2026 - 10:15", atualizadoEm: "18/03/2026 - 10:15" },
-	{ id: "••••••••••••••••••••", status: "Aguardando", produto: "Avaliação Física",   vendedor: "Emerson S.", cliente: "Maria Souza", criadoEm: "9/03/2026 - 16:40",  atualizadoEm: "19/03/2026 - 16:40" },
-];
+// dados carregados da API
 
 const TODAS_COLUNAS = [
 	{ key: "id",           label: "Nº Pedido"        },
@@ -103,6 +99,9 @@ function StatusBadge({ status }) {
 
 // ── página principal ───────────────────────────────────────────────────────
 export default function Vendas() {
+	const [vendas,         setVendas]         = useState([]);
+	const [loading,        setLoading]        = useState(true);
+	const [erro,           setErro]           = useState(null);
 	const [busca,          setBusca]          = useState("");
 	const [dataFiltro,     setDataFiltro]     = useState("");
 	const [statusFiltro,   setStatusFiltro]   = useState([]);
@@ -112,6 +111,13 @@ export default function Vendas() {
 	const [sortDir,        setSortDir]        = useState("asc");
 	const [pagina,         setPagina]         = useState(1);
 	const [linhasPorPag,   setLinhasPorPag]   = useState(20);
+
+	useEffect(() => {
+		getVendas()
+			.then(setVendas)
+			.catch(e => setErro(e.message))
+			.finally(() => setLoading(false));
+	}, []);
 
 	const calDrop    = useDropdown();
 	const colDrop    = useDropdown();
@@ -143,7 +149,7 @@ export default function Vendas() {
 	};
 
 	// filtrar dados
-	let dados = [...VENDAS_MOCK];
+	let dados = [...vendas];
 	if (busca)              dados = dados.filter(v => Object.values(v).join(" ").toLowerCase().includes(busca.toLowerCase()));
 	if (statusFiltro.length) dados = dados.filter(v => statusFiltro.includes(v.status));
 	if (dataFiltro)         dados = dados.filter(v => v.criadoEm.startsWith(dataFiltro.split("/").reverse().join("-").substring(0,2)));
@@ -243,6 +249,9 @@ export default function Vendas() {
 				</button>
 			</div>
 
+			{erro    && <p style={{color:"#dc2626",fontSize:"0.875rem"}}>Erro ao carregar vendas: {erro}</p>}
+			{loading && <p style={{color:"#888",fontSize:"0.875rem"}}>Carregando...</p>}
+
 			{/* tabela */}
 			<div className={styles.tableWrap}>
 				<table className={styles.table}>
@@ -279,7 +288,7 @@ export default function Vendas() {
 
 			{/* rodapé */}
 			<div className={styles.rodape}>
-				<span className={styles.total}>{dados.length} de {VENDAS_MOCK.length} resultado(s)</span>
+				<span className={styles.total}>{dados.length} de {vendas.length} resultado(s)</span>
 
 				<div className={styles.paginacao}>
 					<label className={styles.linhasLabel}>
