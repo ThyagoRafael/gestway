@@ -1,0 +1,185 @@
+.page {
+	flex: 1;
+	padding: 1.5rem 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	background: #f9f9f9;
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.breadcrumb { font-size: 0.8rem; color: #888; }
+.titulo { font-size: 1.75rem; font-weight: 700; color: #111; }
+
+.card {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 1.5rem 1.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	max-width: 600px;
+}
+
+/* avatar */
+.avatarWrap { display: flex; justify-content: center; }
+
+.avatar {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	background: #729aff;
+	color: #fff;
+	font-size: 2rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* info rows */
+.info { display: flex; flex-direction: column; gap: 1rem; }
+
+.infoRow {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid #f3f4f6;
+}
+
+.infoRow:last-child { border-bottom: none; padding-bottom: 0; }
+
+.infoIcon { color: #888; margin-top: 2px; flex-shrink: 0; }
+
+.infoLabel { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
+.infoValor { font-size: 0.95rem; color: #111; font-weight: 500; }
+
+/* card header */
+.cardHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.cardHeaderLeft {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #111;
+}
+
+.cardHeaderLeft h2 { font-size: 1rem; font-weight: 600; }
+
+.editBtn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.8rem;
+	cursor: pointer;
+	color: #555;
+}
+
+.editBtn:hover { border-color: #729aff; color: #729aff; }
+
+.senhaPlaceholder { font-size: 1.2rem; color: #bbb; letter-spacing: 3px; }
+
+/* form senha */
+.senhaForm { display: flex; flex-direction: column; gap: 1rem; }
+
+.formGroup { display: flex; flex-direction: column; gap: 4px; }
+.formGroup label { font-size: 0.85rem; color: #555; }
+
+.input {
+	padding: 9px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	outline: none;
+	background: #fff;
+	color: #111;
+}
+
+.input:focus { border-color: #729aff; }
+
+.senhaAcoes {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin-top: 0.25rem;
+}
+
+.cancelarBtn {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 8px 16px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.875rem;
+	cursor: pointer;
+	color: #555;
+}
+
+.cancelarBtn:hover { background: #f3f4f6; }
+
+.salvarBtn {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 8px 16px;
+	border: none;
+	border-radius: 8px;
+	background: #729aff;
+	color: #fff;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.salvarBtn:hover:not(:disabled) { background: #5a7bce; }
+.salvarBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* mensagens */
+.erro {
+	background: #fee2e2;
+	border: 1px solid #fca5a5;
+	border-radius: 8px;
+	padding: 8px 12px;
+	font-size: 0.85rem;
+	color: #dc2626;
+}
+
+.sucesso {
+	background: #dcfce7;
+	border: 1px solid #86efac;
+	border-radius: 8px;
+	padding: 8px 12px;
+	font-size: 0.85rem;
+	color: #16a34a;
+}
+
+/* botão sair */
+.sairWrap { max-width: 600px; }
+
+.sairBtn {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 20px;
+	border: 1px solid #fca5a5;
+	border-radius: 8px;
+	background: #fff;
+	color: #dc2626;
+	font-size: 0.875rem;
+	cursor: pointer;
+}
+
+.sairBtn:hover { background: #fee2e2; }
