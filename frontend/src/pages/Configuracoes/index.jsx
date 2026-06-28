@@ -82,7 +82,7 @@ function ProdutoSlot({ produto, onAdd, onRemove }) {
 
 // ── grid de promoções ──────────────────────────────────────────────────────
 function GridPromocoes({ numero, gridKey }) {
-	const { config, atualizar } = useConfig();
+	const { config, atualizar, salvar } = useConfig();
 	const grid = config[gridKey];
 
 	const setTitulo    = (v) => atualizar({ [gridKey]: { ...grid, titulo: v } });
@@ -135,7 +135,7 @@ function GridPromocoes({ numero, gridKey }) {
 
 // ── página principal ───────────────────────────────────────────────────────
 export default function Configuracoes() {
-	const { config, atualizar } = useConfig();
+	const { config, atualizar, salvar } = useConfig();
 
 	const [vouchers,    setVouchers]    = useState([]);
 	const [dropVoucher, setDropVoucher] = useState(false);
@@ -153,8 +153,11 @@ export default function Configuracoes() {
 	const LU = 100, LD = 64;
 
 	const handleSalvar = () => {
-		setSalvo(true);
-		setTimeout(() => setSalvo(false), 3000);
+		const ok = salvar();
+		if (ok) {
+			setSalvo(true);
+			setTimeout(() => setSalvo(false), 3000);
+		}
 	};
 
 	return (

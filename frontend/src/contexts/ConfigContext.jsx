@@ -1,5 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
+const STORAGE_KEY = "gestway_config";
+
 const INICIAL = {
 	corPrimaria:   "#176FB8",
 	corSecundaria: "#729AFF",
@@ -26,13 +28,34 @@ const INICIAL = {
 	voucherSel:    null,
 };
 
+function carregarConfig() {
+	try {
+		const salvo = localStorage.getItem(STORAGE_KEY);
+		if (salvo) return { ...INICIAL, ...JSON.parse(salvo) };
+	} catch {}
+	return INICIAL;
+}
+
 const ConfigContext = createContext(null);
 
 export function ConfigProvider({ children }) {
-	const [config, setConfig] = useState(INICIAL);
-	const atualizar = (patch) => setConfig(prev => ({ ...prev, ...patch }));
+	const [config, setConfig] = useState(carregarConfig);
+
+	const atualizar = (patch) =>
+		setConfig(prev => ({ ...prev, ...patch }));
+
+	// salva no localStorage e mostra confirmação
+	const salvar = () => {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
 	return (
-		<ConfigContext.Provider value={{ config, atualizar }}>
+		<ConfigContext.Provider value={{ config, atualizar, salvar }}>
 			{children}
 		</ConfigContext.Provider>
 	);
