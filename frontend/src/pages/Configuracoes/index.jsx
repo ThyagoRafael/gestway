@@ -1,24 +1,22 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiUpload, FiChevronDown, FiPlus, FiX } from "react-icons/fi";
 import BackButton from "../../components/BackButton";
 import ModalSelecionarProduto from "../../components/ModalSelecionarProduto";
+import { useConfig } from "../../contexts/ConfigContext";
+import { getVouchers } from "../../services/vouchers";
 import styles from "./Configuracoes.module.css";
 
-const CATEGORIAS    = ["Eletrônicos", "E-books", "Vestuário", "Utilidades", "Serviços"];
-const VOUCHERS_MOCK = [
-	{ codigo: "BEMVIND0", porcentagem: "10%" },
-	{ codigo: "NIVER15",  porcentagem: "15%" },
-];
-const N_SLOTS = 4;
+const CATEGORIAS = ["Eletrônicos", "E-books", "Vestuário", "Utilidades", "Serviços"];
+const N_SLOTS    = 4;
 
-function ImageUpload() {
-	const [preview, setPreview] = useState(null);
+// ── upload de imagem ───────────────────────────────────────────────────────
+function ImageUpload({ value, onChange }) {
 	const ref = useRef(null);
 	const handleFile = (e) => {
 		const file = e.target.files[0];
 		if (!file) return;
 		const r = new FileReader();
-		r.onload = (ev) => setPreview(ev.target.result);
+		r.onload = (ev) => onChange(ev.target.result);
 		r.readAsDataURL(file);
 	};
 	return (
@@ -30,11 +28,12 @@ function ImageUpload() {
 				</button>
 				<span className={styles.uploadHint}>(Formatos recomendados : JPG, PNG. Tamanho máx : 10MB)</span>
 			</div>
-			{preview && <img src={preview} alt="preview" className={styles.uploadPreview}/>}
+			{value && <img src={value} alt="preview" className={styles.uploadPreview}/>}
 		</div>
 	);
 }
 
+// ── select ─────────────────────────────────────────────────────────────────
 function Select({ value, onChange, options }) {
 	return (
 		<div className={styles.selectWrap}>
@@ -46,10 +45,12 @@ function Select({ value, onChange, options }) {
 	);
 }
 
-// ── slot individual de produto ─────────────────────────────────────────────
+// ── slot de produto ────────────────────────────────────────────────────────
 function ProdutoSlot({ produto, onAdd, onRemove }) {
 	if (produto) {
-		const economia = (produto.precoOld - produto.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+		const economia = produto.precoOld
+			? (produto.precoOld - produto.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+			: "0,00";
 		return (
 			<div className={styles.slot}>
 				<button className={styles.slotRemover} onClick={onRemove}><FiX size={10}/></button>
@@ -80,16 +81,19 @@ function ProdutoSlot({ produto, onAdd, onRemove }) {
 }
 
 // ── grid de promoções ──────────────────────────────────────────────────────
-function GridPromocoes({ numero }) {
-	const [titulo,    setTitulo]    = useState("As melhores promoções em {categoria}");
-	const [categoria, setCategoria] = useState(CATEGORIAS[numero - 1] || CATEGORIAS[0]);
-	const [slots,     setSlots]     = useState(Array(N_SLOTS).fill(null));
-	const [modalSlot, setModalSlot] = useState(null);
+function GridPromocoes({ numero, gridKey }) {
+	const { config, atualizar, salvar } = useConfig();
+	const grid = config[gridKey];
 
-	const handleConfirm = (produto) => {
-		setSlots(prev => { const n = [...prev]; n[modalSlot] = produto; return n; });
-		setModalSlot(null);
+	const setTitulo    = (v) => atualizar({ [gridKey]: { ...grid, titulo: v } });
+	const setCategoria = (v) => atualizar({ [gridKey]: { ...grid, categoria: v } });
+	const setSlot      = (i, produto) => {
+		const slots = [...grid.slots];
+		slots[i] = produto;
+		atualizar({ [gridKey]: { ...grid, slots } });
 	};
+
+	const [modalSlot, setModalSlot] = useState(null);
 
 	return (
 		<>
@@ -99,20 +103,20 @@ function GridPromocoes({ numero }) {
 					<div className={styles.gridControls}>
 						<div className={styles.formGroup}>
 							<label>Título</label>
-							<input value={titulo} onChange={e => setTitulo(e.target.value)} className={styles.input}/>
+							<input value={grid.titulo} onChange={e => setTitulo(e.target.value)} className={styles.input}/>
 						</div>
 						<div className={styles.formGroup}>
 							<label>Categoria</label>
-							<Select value={categoria} onChange={setCategoria} options={CATEGORIAS}/>
+							<Select value={grid.categoria} onChange={setCategoria} options={CATEGORIAS}/>
 						</div>
 					</div>
 					<div className={styles.slotsRow}>
-						{slots.map((produto, i) => (
+						{grid.slots.map((produto, i) => (
 							<ProdutoSlot
 								key={i}
 								produto={produto}
 								onAdd={() => setModalSlot(i)}
-								onRemove={() => setSlots(p => { const n=[...p]; n[i]=null; return n; })}
+								onRemove={() => setSlot(i, null)}
 							/>
 						))}
 					</div>
@@ -120,8 +124,8 @@ function GridPromocoes({ numero }) {
 			</div>
 			{modalSlot !== null && (
 				<ModalSelecionarProduto
-					categoria={categoria}
-					onConfirm={handleConfirm}
+					categoria={grid.categoria}
+					onConfirm={(p) => { setSlot(modalSlot, p); setModalSlot(null); }}
 					onClose={() => setModalSlot(null)}
 				/>
 			)}
@@ -131,19 +135,30 @@ function GridPromocoes({ numero }) {
 
 // ── página principal ───────────────────────────────────────────────────────
 export default function Configuracoes() {
-	const [corPrimaria,   setCorPrimaria]   = useState("#176FB8");
-	const [corSecundaria, setCorSecundaria] = useState("#729AFF");
-	const [banner1, setBanner1] = useState({ titulo:"Smartphones", descUpper:"As melhores ofertas de smartphones", desc:"Apple, Samsung, Xiaomi e mais!" });
-	const [banner2, setBanner2] = useState({ titulo:"Camisas esportivas", descUpper:"Camisas de time? Também em promoção!", desc:"Torça com estilo!", desconto:"Até 50% de desconto!" });
-	const [exibirBanner,  setExibirBanner]  = useState(true);
-	const [tituloVoucher, setTituloVoucher] = useState("Voucher de Bem-Vindo!");
-	const [textoVoucher,  setTextoVoucher]  = useState('10% OFF com o código "BEMVINDO10"');
-	const [voucherSel,    setVoucherSel]    = useState("");
-	const [dropVoucher,   setDropVoucher]   = useState(false);
+	const { config, atualizar, salvar } = useConfig();
 
-	const s1 = (k,v) => setBanner1(p=>({...p,[k]:v}));
-	const s2 = (k,v) => setBanner2(p=>({...p,[k]:v}));
-	const LU=100, LD=64;
+	const [vouchers,    setVouchers]    = useState([]);
+	const [dropVoucher, setDropVoucher] = useState(false);
+	const [salvo,       setSalvo]       = useState(false);
+
+	// carrega vouchers reais da API
+	useEffect(() => {
+		getVouchers()
+			.then(vs => setVouchers(vs.filter(v => v.status === "Ativo")))
+			.catch(() => {}); // falha silenciosa sem banco
+	}, []);
+
+	const s1 = (k, v) => atualizar({ banner1: { ...config.banner1, [k]: v } });
+	const s2 = (k, v) => atualizar({ banner2: { ...config.banner2, [k]: v } });
+	const LU = 100, LD = 64;
+
+	const handleSalvar = () => {
+		const ok = salvar();
+		if (ok) {
+			setSalvo(true);
+			setTimeout(() => setSalvo(false), 3000);
+		}
+	};
 
 	return (
 		<main className={styles.page}>
@@ -155,60 +170,68 @@ export default function Configuracoes() {
 			<h1 className={styles.titulo}>Edição do Site</h1>
 			<p className={styles.subtitulo}>Gerencie o visual do conteúdo do seu site</p>
 
+			{salvo && <p className={styles.salvoMsg}>✓ Alterações salvas com sucesso!</p>}
+
 			{/* 1. Identidade Visual */}
 			<section className={styles.section}>
 				<h2 className={styles.sectionTitle}>1. Identidade Visual e página inicial</h2>
 				<div className={styles.identidadeCard}>
 					<div className={styles.logoArea}>
 						<div className={styles.logoHeader}><span>👤</span><span className={styles.logoLabel}>Logotipo da Loja</span></div>
-						<div className={styles.logoPreviewWrap}><div className={styles.logoPreview}><span className={styles.logoG}>G</span></div></div>
-						<ImageUpload/>
+						<div className={styles.logoPreviewWrap}>
+							<div className={styles.logoPreview}>
+								{config.logo
+									? <img src={config.logo} alt="logo" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:14}}/>
+									: <span className={styles.logoG}>G</span>
+								}
+							</div>
+						</div>
+						<ImageUpload value={config.logo} onChange={v => atualizar({ logo: v })}/>
 					</div>
 					<div className={styles.coresArea}>
 						<h3 className={styles.coresTitle}>Cores da marca</h3>
-						{[["Cor Primária", corPrimaria, setCorPrimaria], ["Cor Secundária", corSecundaria, setCorSecundaria]].map(([label, val, set]) => (
-							<div key={label} className={styles.corItem}>
+						{[["Cor Primária", "corPrimaria"], ["Cor Secundária", "corSecundaria"]].map(([label, key]) => (
+							<div key={key} className={styles.corItem}>
 								<span className={styles.corLabel}>{label}</span>
 								<div className={styles.corInputWrap}>
-									<input type="color" value={val} onChange={e=>set(e.target.value)} className={styles.corSwatch}/>
-									<input type="text"  value={val} onChange={e=>set(e.target.value)} className={styles.corText}/>
+									<input type="color" value={config[key]} onChange={e => atualizar({ [key]: e.target.value })} className={styles.corSwatch}/>
+									<input type="text"  value={config[key]} onChange={e => atualizar({ [key]: e.target.value })} className={styles.corText}/>
 								</div>
 							</div>
 						))}
 					</div>
 				</div>
 
-				{/* Banner Hero */}
+				{/* banners hero */}
 				<div className={styles.bannerHeroWrap}>
 					<h3 className={styles.bannerHeroTitle}>🖼 Banner Hero</h3>
 					<div className={styles.bannersRow}>
-						{/* Banner 1 */}
 						<div className={styles.bannerCard}>
 							<p className={styles.bannerNumero}>1. Banner Esquerdo</p>
-							<div className={styles.formGroup}><label>Título</label><input value={banner1.titulo} onChange={e=>s1("titulo",e.target.value)} className={styles.input}/></div>
-							<div className={styles.formGroup}><label>Texto de descrição (upper)</label><div className={styles.textareaWrap}><textarea value={banner1.descUpper} onChange={e=>e.target.value.length<=LU&&s1("descUpper",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{banner1.descUpper.length}/{LU}</span></div></div>
-							<div className={styles.formGroup}><label>Texto de descrição</label><div className={styles.textareaWrap}><textarea value={banner1.desc} onChange={e=>e.target.value.length<=LD&&s1("desc",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{banner1.desc.length}/{LD}</span></div></div>
-							<ImageUpload/>
+							<div className={styles.formGroup}><label>Título</label><input value={config.banner1.titulo} onChange={e=>s1("titulo",e.target.value)} className={styles.input}/></div>
+							<div className={styles.formGroup}><label>Texto de descrição (upper)</label><div className={styles.textareaWrap}><textarea value={config.banner1.descUpper} onChange={e=>e.target.value.length<=LU&&s1("descUpper",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{config.banner1.descUpper.length}/{LU}</span></div></div>
+							<div className={styles.formGroup}><label>Texto de descrição</label><div className={styles.textareaWrap}><textarea value={config.banner1.desc} onChange={e=>e.target.value.length<=LD&&s1("desc",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{config.banner1.desc.length}/{LD}</span></div></div>
+							<div className={styles.formGroup}><label>Texto de desconto</label><input value={config.banner1.desconto||""} onChange={e=>s1("desconto",e.target.value)} className={styles.input}/></div>
+							<ImageUpload value={config.banner1.imagem} onChange={v=>s1("imagem",v)}/>
 						</div>
-						{/* Banner 2 */}
 						<div className={styles.bannerCard}>
 							<p className={styles.bannerNumero}>2. Banner Direito</p>
-							<div className={styles.formGroup}><label>Título</label><input value={banner2.titulo} onChange={e=>s2("titulo",e.target.value)} className={styles.input}/></div>
-							<div className={styles.formGroup}><label>Texto de descrição (upper)</label><div className={styles.textareaWrap}><textarea value={banner2.descUpper} onChange={e=>e.target.value.length<=LU&&s2("descUpper",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{banner2.descUpper.length}/{LU}</span></div></div>
-							<div className={styles.formGroup}><label>Texto de descrição</label><div className={styles.textareaWrap}><textarea value={banner2.desc} onChange={e=>e.target.value.length<=LD&&s2("desc",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{banner2.desc.length}/{LD}</span></div></div>
-							<div className={styles.formGroup}><label>Texto de desconto</label><div className={styles.textareaWrap}><input value={banner2.desconto} onChange={e=>e.target.value.length<=LD&&s2("desconto",e.target.value)} className={styles.input}/><span className={styles.charCountInline}>{banner2.desconto?.length||0}/{LD}</span></div></div>
-							<ImageUpload/>
+							<div className={styles.formGroup}><label>Título</label><input value={config.banner2.titulo} onChange={e=>s2("titulo",e.target.value)} className={styles.input}/></div>
+							<div className={styles.formGroup}><label>Texto de descrição (upper)</label><div className={styles.textareaWrap}><textarea value={config.banner2.descUpper} onChange={e=>e.target.value.length<=LU&&s2("descUpper",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{config.banner2.descUpper.length}/{LU}</span></div></div>
+							<div className={styles.formGroup}><label>Texto de descrição</label><div className={styles.textareaWrap}><textarea value={config.banner2.desc} onChange={e=>e.target.value.length<=LD&&s2("desc",e.target.value)} className={styles.textarea} rows={3}/><span className={styles.charCount}>{config.banner2.desc.length}/{LD}</span></div></div>
+							<div className={styles.formGroup}><label>Texto de desconto</label><div className={styles.textareaWrap}><input value={config.banner2.desconto||""} onChange={e=>s2("desconto",e.target.value)} className={styles.input}/><span className={styles.charCountInline}>{config.banner2.desconto?.length||0}/{LD}</span></div></div>
+							<ImageUpload value={config.banner2.imagem} onChange={v=>s2("imagem",v)}/>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* 2. Grids de Promoções */}
+			{/* 2. Grids */}
 			<section className={styles.section}>
 				<h2 className={styles.sectionTitle}>2. Grids de Promoções e Destaques</h2>
 				<div className={styles.gridsWrap}>
-					<GridPromocoes numero={1}/>
-					<GridPromocoes numero={2}/>
+					<GridPromocoes numero={1} gridKey="grid1"/>
+					<GridPromocoes numero={2} gridKey="grid2"/>
 				</div>
 			</section>
 
@@ -219,28 +242,31 @@ export default function Configuracoes() {
 					<div className={styles.voucherLeft}>
 						<div className={styles.toggleRow}>
 							<span className={styles.toggleLabel}>Exibir banner</span>
-							<button type="button" className={`${styles.toggle} ${exibirBanner?styles.toggleOn:""}`} onClick={()=>setExibirBanner(p=>!p)}>
+							<button type="button" className={`${styles.toggle} ${config.exibirBanner?styles.toggleOn:""}`} onClick={()=>atualizar({exibirBanner:!config.exibirBanner})}>
 								<span className={styles.toggleThumb}/>
 							</button>
 						</div>
-						<div className={styles.formGroup}><label>Título</label><input value={tituloVoucher} onChange={e=>setTituloVoucher(e.target.value)} className={styles.input}/></div>
-						<div className={styles.formGroup}><label>Texto descritivo</label><textarea value={textoVoucher} onChange={e=>setTextoVoucher(e.target.value)} className={styles.textarea} rows={3}/></div>
+						<div className={styles.formGroup}><label>Título</label><input value={config.tituloVoucher} onChange={e=>atualizar({tituloVoucher:e.target.value})} className={styles.input}/></div>
+						<div className={styles.formGroup}><label>Texto descritivo</label><textarea value={config.textoVoucher} onChange={e=>atualizar({textoVoucher:e.target.value})} className={styles.textarea} rows={3}/></div>
 					</div>
 					<div className={styles.voucherRight}>
 						<label className={styles.voucherSelLabel}>Selecione o Voucher</label>
 						<div style={{position:"relative"}}>
 							<button type="button" className={styles.voucherSelBtn} onClick={()=>setDropVoucher(p=>!p)}>
-								{voucherSel||""} <FiChevronDown size={13}/>
+								{config.voucherSel?.codigo || "Selecionar..."} <FiChevronDown size={13}/>
 							</button>
 							{dropVoucher && (
 								<div className={styles.voucherDrop}>
 									<div className={styles.voucherDropHeader}><span>Código</span><span>Porcentagem</span></div>
-									{VOUCHERS_MOCK.map(v=>(
-										<button key={v.codigo} type="button"
-											className={`${styles.voucherDropItem} ${voucherSel===v.codigo?styles.voucherDropItemSel:""}`}
-											onClick={()=>{setVoucherSel(v.codigo);setDropVoucher(false);}}
-										><span>{v.codigo}</span><span>{v.porcentagem}</span></button>
-									))}
+									{vouchers.length === 0
+										? <p style={{padding:"8px 14px",fontSize:"0.8rem",color:"#888"}}>Nenhum voucher ativo</p>
+										: vouchers.map(v => (
+											<button key={v.id} type="button"
+												className={`${styles.voucherDropItem} ${config.voucherSel?.id===v.id?styles.voucherDropItemSel:""}`}
+												onClick={()=>{atualizar({voucherSel:v});setDropVoucher(false);}}
+											><span>{v.codigo}</span><span>{v.desconto}</span></button>
+										))
+									}
 								</div>
 							)}
 						</div>
@@ -249,8 +275,8 @@ export default function Configuracoes() {
 			</section>
 
 			<div className={styles.acoes}>
-				<button type="button" className={styles.btnVisualizar}>Visualizar Site</button>
-				<button type="button" className={styles.btnSalvar}>Salvar Alterações</button>
+				<button type="button" className={styles.btnVisualizar} onClick={() => window.open("/", "_blank")}>Visualizar Site</button>
+				<button type="button" className={styles.btnSalvar} onClick={handleSalvar}>Salvar Alterações</button>
 			</div>
 		</main>
 	);

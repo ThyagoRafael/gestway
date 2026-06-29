@@ -2,55 +2,45 @@ import { useState } from "react";
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiChevronDown,
          FiPhone, FiMail, FiInstagram, FiChevronRight } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import { useConfig } from "../../contexts/ConfigContext";
 import styles from "./LandingPage.module.css";
 
-// ── dados mock ─────────────────────────────────────────────────────────────
-const CATEGORIAS_NAV = ["Eletrônicos", "Vestuários", "Licenças", "E-books", "Saúde"];
-
-const PRODUTOS_ELETRONICOS = [
-	{ id:1, nome:"Galaxy S22 Ultra",         preco:3900, precoOld:4099, economia:672, badge:"56% PROMO" },
-	{ id:2, nome:"Galaxy M13 (4GB | 64 GB)", preco:1200, precoOld:1872, economia:672, badge:"56% PROMO" },
-	{ id:3, nome:"Galaxy M33 (4GB | 64 GB)", preco:1200, precoOld:1872, economia:672, badge:"56% PROMO" },
-	{ id:4, nome:"Galaxy M53 (4GB | 64 GB)", preco:1200, precoOld:1872, economia:672, badge:"56% PROMO" },
-];
-
-const PRODUTOS_EBOOKS = [
-	{ id:5, nome:"Harry Potter",   preco:50, precoOld:100, economia:50, badge:"50% PROMO" },
-	{ id:6, nome:"Fundação",       preco:50, precoOld:100, economia:50, badge:"50% PROMO" },
-	{ id:7, nome:"Percy Jackson",  preco:50, precoOld:100, economia:50, badge:"50% PROMO" },
-	{ id:8, nome:"O Tempo e o Vento", preco:50, precoOld:100, economia:50, badge:"50% PROMO" },
-];
+const BRL = (v) => Number(v ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 const MARCAS = [
-	{ nome:"IPHONE",  cor:"#1c1c1e", desconto:"Até 40% OFF" },
-	{ nome:"REALME",  cor:"#fef3c7", desconto:"Até 60% OFF", logoColor:"#f59e0b" },
-	{ nome:"XIAOMI",  cor:"#fce7d6", desconto:"Até 80% OFF", logoColor:"#e86c30" },
+	{ nome:"IPHONE", cor:"#1c1c1e", desconto:"Até 40% OFF" },
+	{ nome:"REALME", cor:"#fef3c7", desconto:"Até 60% OFF", logoColor:"#f59e0b" },
+	{ nome:"XIAOMI", cor:"#fce7d6", desconto:"Até 80% OFF", logoColor:"#e86c30" },
 ];
-
-const BRL = (v) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 // ── card de produto ────────────────────────────────────────────────────────
 function ProdutoCard({ produto, wide = false }) {
+	if (!produto) return null;
+	const economia = produto.precoOld ? produto.precoOld - produto.preco : 0;
+	const pct = produto.precoOld ? Math.round((1 - produto.preco / produto.precoOld) * 100) : 0;
 	return (
 		<div className={`${styles.prodCard} ${wide ? styles.prodCardWide : ""}`}>
 			<div className={styles.prodImgWrap}>
-				<span className={styles.prodBadge}>{produto.badge}</span>
-				<div className={styles.prodImg}><span>{produto.nome.charAt(0)}</span></div>
+				{pct > 0 && <span className={styles.prodBadge}>{pct}% PROMO</span>}
+				{produto.imagem
+					? <img src={produto.imagem} alt={produto.nome} className={styles.prodImgReal}/>
+					: <div className={styles.prodImg}><span>{produto.nome.charAt(0)}</span></div>
+				}
 			</div>
 			<div className={styles.prodInfo}>
 				<p className={styles.prodNome}>{produto.nome}</p>
 				<div className={styles.prodPrecos}>
 					<span className={styles.prodPreco}>R$ {BRL(produto.preco)}</span>
-					<span className={styles.prodPrecoOld}>R$ {BRL(produto.precoOld)}</span>
+					{produto.precoOld && <span className={styles.prodPrecoOld}>R$ {BRL(produto.precoOld)}</span>}
 				</div>
-				<p className={styles.prodEconomia}>Economize R$ {BRL(produto.economia)}</p>
+				{economia > 0 && <p className={styles.prodEconomia}>Economize R$ {BRL(economia)}</p>}
 			</div>
 		</div>
 	);
 }
 
 // ── voucher flutuante ──────────────────────────────────────────────────────
-function VoucherFlutuante() {
+function VoucherFlutuante({ titulo, texto, voucher }) {
 	const [expanded, setExpanded] = useState(false);
 	return (
 		<div className={`${styles.voucherFloat} ${expanded ? styles.voucherFloatOpen : ""}`}
@@ -58,9 +48,9 @@ function VoucherFlutuante() {
 			<div className={styles.voucherFloatIcon}>🎟</div>
 			{expanded && (
 				<div className={styles.voucherFloatContent}>
-					<p className={styles.voucherFloatTitle}>Voucher de Bem-Vindo!</p>
-					<p className={styles.voucherFloatCode}><strong>BEMVINDO10</strong></p>
-					<p className={styles.voucherFloatDesc}>10% OFF na sua primeira compra</p>
+					<p className={styles.voucherFloatTitle}>{titulo}</p>
+					{voucher && <p className={styles.voucherFloatCode}><strong>{voucher.codigo}</strong></p>}
+					<p className={styles.voucherFloatDesc}>{texto}</p>
 				</div>
 			)}
 		</div>
@@ -69,15 +59,23 @@ function VoucherFlutuante() {
 
 // ── página ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+	const { config } = useConfig();
 	const [busca, setBusca] = useState("");
+
+	const { banner1, banner2, grid1, grid2, exibirBanner,
+	        tituloVoucher, textoVoucher, voucherSel, corPrimaria } = config;
+
+	// produtos dos slots (filtra nulls)
+	const prodGrid1 = grid1.slots.filter(Boolean);
+	const prodGrid2 = grid2.slots.filter(Boolean);
 
 	return (
 		<div className={styles.page}>
-			{/* ── header ─────────────────────────────────────────────── */}
+			{/* ── header ──────────────────────────────────────────────── */}
 			<header className={styles.header}>
 				<div className={styles.headerInner}>
 					<div className={styles.logo}>
-						<div className={styles.logoIcon}>G</div>
+						<div className={styles.logoIcon} style={{background: corPrimaria}}>G</div>
 						<span>GestWay</span>
 					</div>
 					<div className={styles.buscaWrap}>
@@ -90,50 +88,56 @@ export default function LandingPage() {
 						<button className={styles.headerBtn}><FiShoppingCart size={16}/> Carrinho</button>
 					</div>
 				</div>
-				{/* nav categorias */}
 				<nav className={styles.nav}>
-					{CATEGORIAS_NAV.map(c => (
+					{["Eletrônicos","Vestuários","Licenças","E-books","Saúde"].map(c => (
 						<button key={c} className={styles.navItem}>{c} <FiChevronDown size={12}/></button>
 					))}
 				</nav>
 			</header>
 
 			<main className={styles.main}>
-				{/* ── banner hero ────────────────────────────────────── */}
+				{/* ── banner hero ─────────────────────────────────────── */}
 				<section className={styles.heroSection}>
-					{/* banner esquerdo */}
-					<div className={styles.heroLeft}>
-						<p className={styles.heroUpper}>As melhores ofertas de smartphones!</p>
-						<h2 className={styles.heroTitulo}>SMARTPHONES</h2>
-						<p className={styles.heroDesc}>Apple, Samsung, Xiaomi e mais!</p>
+					<div className={styles.heroLeft} style={{background: corPrimaria}}>
+						<p className={styles.heroUpper}>{banner1.descUpper}</p>
+						<h2 className={styles.heroTitulo}>{banner1.titulo.toUpperCase()}</h2>
+						<p className={styles.heroDesc}>{banner1.desc}</p>
 						<button className={styles.heroBtn}>Compre já!</button>
 						<div className={styles.heroImgWrap}>
-							<div className={styles.heroImgPlaceholder}/>
-							<div className={styles.heroDesconto}>Até 50% de<br/>desconto!</div>
+							{banner1.imagem
+								? <img src={banner1.imagem} alt="banner1" className={styles.heroImgReal}/>
+								: <div className={styles.heroImgPlaceholder}/>
+							}
+							{banner1.desconto && <div className={styles.heroDesconto}>{banner1.desconto}</div>}
 						</div>
 					</div>
-					{/* banner direito */}
-					<div className={`${styles.heroRight}`}>
-						<p className={styles.heroUpper}>Camisas de time? Também em promoção!</p>
-						<h2 className={styles.heroTitulo}>Camisas<br/>esportivas</h2>
-						<p className={styles.heroDesc}>Torça com estilo!</p>
+					<div className={styles.heroRight}>
+						<p className={styles.heroUpper}>{banner2.descUpper}</p>
+						<h2 className={styles.heroTitulo}>{banner2.titulo}</h2>
+						<p className={styles.heroDesc}>{banner2.desc}</p>
 						<button className={styles.heroBtn}>Compre já!</button>
 						<div className={styles.heroImgWrap}>
-							<div className={styles.heroImgPlaceholder}/>
-							<div className={styles.heroDesconto}>Até 70% de<br/>desconto!</div>
+							{banner2.imagem
+								? <img src={banner2.imagem} alt="banner2" className={styles.heroImgReal}/>
+								: <div className={styles.heroImgPlaceholder}/>
+							}
+							{banner2.desconto && <div className={styles.heroDesconto}>{banner2.desconto}</div>}
 						</div>
 					</div>
 				</section>
 
-				{/* ── grid eletrônicos ────────────────────────────────── */}
+				{/* ── grid 1 ──────────────────────────────────────────── */}
 				<section className={styles.gridSection}>
 					<div className={styles.gridHeader}>
-						<h3>As melhores promoções em <span className={styles.gridCat}>Eletrônicos</span></h3>
+						<h3>{grid1.titulo.replace("{categoria}", "")} <span className={styles.gridCat}>{grid1.categoria}</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
-					<div className={styles.gridLine}/>
+					<div className={styles.gridLine} style={{background: corPrimaria}}/>
 					<div className={styles.prodGrid}>
-						{PRODUTOS_ELETRONICOS.map(p => <ProdutoCard key={p.id} produto={p}/>)}
+						{prodGrid1.length > 0
+							? prodGrid1.map((p, i) => <ProdutoCard key={i} produto={p}/>)
+							: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 1.</p>
+						}
 					</div>
 				</section>
 
@@ -143,50 +147,55 @@ export default function LandingPage() {
 						<h3>As melhores marcas de <span className={styles.gridCat}>SMARTPHONES</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
-					<div className={styles.gridLine}/>
+					<div className={styles.gridLine} style={{background: corPrimaria}}/>
 					<div className={styles.marcasGrid}>
 						{MARCAS.map(m => (
 							<div key={m.nome} className={styles.marcaCard} style={{background: m.cor}}>
 								<div className={styles.marcaTag}>{m.nome}</div>
 								<div className={styles.marcaLogoWrap}>
-									<div className={styles.marcaLogo} style={{color: m.logoColor || "#fff"}}>
-										{m.nome.charAt(0)}
-									</div>
+									<div className={styles.marcaLogo} style={{color: m.logoColor||"#fff"}}>{m.nome.charAt(0)}</div>
 								</div>
-								<p className={styles.marcaDesconto} style={{color: m.cor === "#1c1c1e" ? "#fff" : "#333"}}>{m.desconto}</p>
+								<p className={styles.marcaDesconto} style={{color: m.cor==="#1c1c1e"?"#fff":"#333"}}>{m.desconto}</p>
 								<div className={styles.marcaImgPlaceholder}/>
 							</div>
 						))}
 					</div>
-					{/* dots carrossel */}
 					<div className={styles.dots}>
-						{[0,1,2,3,4,5,6].map(i => <span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`}/>)}
+						{[0,1,2,3,4,5,6].map(i=><span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`}/>)}
 					</div>
 				</section>
 
-				{/* ── grid e-books ─────────────────────────────────────── */}
+				{/* ── grid 2 ──────────────────────────────────────────── */}
 				<section className={styles.gridSection}>
 					<div className={styles.gridHeader}>
-						<h3>As melhores promoções em <span className={styles.gridCat}>E-Books</span></h3>
+						<h3>{grid2.titulo.replace("{categoria}", "")} <span className={styles.gridCat}>{grid2.categoria}</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
-					<div className={styles.gridLine}/>
+					<div className={styles.gridLine} style={{background: corPrimaria}}/>
 					<div className={styles.prodGrid}>
-						{PRODUTOS_EBOOKS.map(p => <ProdutoCard key={p.id} produto={p} wide/>)}
+						{prodGrid2.length > 0
+							? prodGrid2.map((p, i) => <ProdutoCard key={i} produto={p} wide/>)
+							: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 2.</p>
+						}
 					</div>
 				</section>
 
 				{/* ── banner voucher ───────────────────────────────────── */}
-				<section className={styles.voucherBanner}>
-					<div className={styles.voucherBannerBlob1}/>
-					<div className={styles.voucherBannerBlob2}/>
-					<p className={styles.voucherBannerTitle}>Voucher de Bem-Vindo!</p>
-					<p className={styles.voucherBannerText}>10% OFF com o código <strong>BEMVINDO10</strong></p>
-				</section>
+				{exibirBanner && (
+					<section className={styles.voucherBanner} style={{background: corPrimaria}}>
+						<div className={styles.voucherBannerBlob1}/>
+						<div className={styles.voucherBannerBlob2}/>
+						<p className={styles.voucherBannerTitle}>{tituloVoucher}</p>
+						<p className={styles.voucherBannerText}>
+							{textoVoucher}
+							{voucherSel && <strong> {voucherSel.codigo}</strong>}
+						</p>
+					</section>
+				)}
 			</main>
 
-			{/* ── footer ─────────────────────────────────────────────── */}
-			<footer className={styles.footer}>
+			{/* ── footer ──────────────────────────────────────────────── */}
+			<footer className={styles.footer} style={{background: corPrimaria}}>
 				<div className={styles.footerInner}>
 					<div className={styles.footerBrand}>
 						<p className={styles.footerLogo}>GESTWAY</p>
@@ -198,7 +207,6 @@ export default function LandingPage() {
 							<div className={styles.footerContatoItem}><FiInstagram size={16}/><p>gest.way</p></div>
 						</div>
 					</div>
-
 					<div className={styles.footerLinks}>
 						<div>
 							<p className={styles.footerLinksTitle}>Categorias Populares</p>
@@ -216,14 +224,11 @@ export default function LandingPage() {
 						</div>
 					</div>
 				</div>
-
-				<div className={styles.footerCopy}>
-					© 2026 Todos os direitos reservados. GestWay.
-				</div>
+				<div className={styles.footerCopy}>© 2026 Todos os direitos reservados. GestWay.</div>
 			</footer>
 
-			{/* ── voucher flutuante ───────────────────────────────────── */}
-			<VoucherFlutuante/>
+			{/* ── voucher flutuante ────────────────────────────────────── */}
+			<VoucherFlutuante titulo={tituloVoucher} texto={textoVoucher} voucher={voucherSel}/>
 		</div>
 	);
 }
