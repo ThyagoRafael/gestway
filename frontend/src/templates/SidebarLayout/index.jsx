@@ -4,7 +4,6 @@ import { BiSolidCategoryAlt } from "react-icons/bi";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import NavItem from "../../components/NavItem";
 import { limparSessao, getUser } from "../../services/auth";
-import fotoPerfil from "../../assets/default-user.jpg";
 import styles from "./SidebarLayout.module.css";
 
 export default function SidebarLayout() {
@@ -63,7 +62,9 @@ export default function SidebarLayout() {
 
 				<footer>
 					<Link to="/perfil" className={styles.userLink}>
-						<img src={fotoPerfil} alt="Foto de perfil do usuário" />
+						<div className={styles.userAvatar}>
+    {(user?.nome_completo_usuario ?? user?.name ?? "U").charAt(0).toUpperCase()}
+</div>
 						<div className={styles["user-details"]}>
 							<p>{user?.nome_completo_usuario ?? user?.name ?? "Usuário"}</p>
 							<span>{user?.email ?? ""}</span>

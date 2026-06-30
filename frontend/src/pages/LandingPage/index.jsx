@@ -21,7 +21,7 @@ function ProdutoCard({ produto, wide = false }) {
 	return (
 		<div className={`${styles.prodCard} ${wide ? styles.prodCardWide : ""}`}>
 			<div className={styles.prodImgWrap}>
-				{pct > 0 && <span className={styles.prodBadge}>{pct}% PROMO</span>}
+				{pct > 0 && <span className={styles.prodBadge} style={{background: corSecundaria}}>{pct}% PROMO</span>}
 				{produto.imagem
 					? <img src={produto.imagem} alt={produto.nome} className={styles.prodImgReal}/>
 					: <div className={styles.prodImg}><span>{produto.nome.charAt(0)}</span></div>
@@ -63,7 +63,7 @@ export default function LandingPage() {
 	const [busca, setBusca] = useState("");
 
 	const { banner1, banner2, grid1, grid2, exibirBanner,
-	        tituloVoucher, textoVoucher, voucherSel, corPrimaria } = config;
+	        tituloVoucher, textoVoucher, voucherSel, corPrimaria, corSecundaria } = config;
 
 	// produtos dos slots (filtra nulls)
 	const prodGrid1 = grid1.slots.filter(Boolean);
@@ -75,7 +75,7 @@ export default function LandingPage() {
 			<header className={styles.header}>
 				<div className={styles.headerInner}>
 					<div className={styles.logo}>
-						<div className={styles.logoIcon} style={{background: corPrimaria}}>G</div>
+						<div className={styles.logoIcon} style={{background: corSecundaria}}>G</div>
 						<span>GestWay</span>
 					</div>
 					<div className={styles.buscaWrap}>
@@ -111,7 +111,7 @@ export default function LandingPage() {
 							{banner1.desconto && <div className={styles.heroDesconto}>{banner1.desconto}</div>}
 						</div>
 					</div>
-					<div className={styles.heroRight}>
+					<div className={styles.heroRight} style={{background: corSecundaria}}>
 						<p className={styles.heroUpper}>{banner2.descUpper}</p>
 						<h2 className={styles.heroTitulo}>{banner2.titulo}</h2>
 						<p className={styles.heroDesc}>{banner2.desc}</p>
@@ -129,7 +129,7 @@ export default function LandingPage() {
 				{/* ── grid 1 ──────────────────────────────────────────── */}
 				<section className={styles.gridSection}>
 					<div className={styles.gridHeader}>
-						<h3>{grid1.titulo.replace("{categoria}", "")} <span className={styles.gridCat}>{grid1.categoria}</span></h3>
+						<h3>{grid1.titulo.replace("{categoria}", "")} <span className={styles.gridCat} style={{color: corSecundaria}}>{grid1.categoria}</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
 					<div className={styles.gridLine} style={{background: corPrimaria}}/>
@@ -144,7 +144,7 @@ export default function LandingPage() {
 				{/* ── carrossel de marcas ──────────────────────────────── */}
 				<section className={styles.gridSection}>
 					<div className={styles.gridHeader}>
-						<h3>As melhores marcas de <span className={styles.gridCat}>SMARTPHONES</span></h3>
+						<h3>As melhores marcas de <span className={styles.gridCat}  style={{color: corSecundaria}}>SMARTPHONES</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
 					<div className={styles.gridLine} style={{background: corPrimaria}}/>
@@ -161,14 +161,14 @@ export default function LandingPage() {
 						))}
 					</div>
 					<div className={styles.dots}>
-						{[0,1,2,3,4,5,6].map(i=><span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`}/>)}
+						{[0,1,2,3,4,5,6].map(i=><span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`} style={i===0?{background:corPrimaria}:{}}/>)}
 					</div>
 				</section>
 
 				{/* ── grid 2 ──────────────────────────────────────────── */}
 				<section className={styles.gridSection}>
 					<div className={styles.gridHeader}>
-						<h3>{grid2.titulo.replace("{categoria}", "")} <span className={styles.gridCat}>{grid2.categoria}</span></h3>
+						<h3>{grid2.titulo.replace("{categoria}", "")} <span className={styles.gridCat}  style={{color: corSecundaria}}>{grid2.categoria}</span></h3>
 						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
 					</div>
 					<div className={styles.gridLine} style={{background: corPrimaria}}/>
