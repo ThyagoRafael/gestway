@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiChevronDown,
          FiPhone, FiMail, FiInstagram, FiChevronRight } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
@@ -60,6 +61,7 @@ function VoucherFlutuante({ titulo, texto, voucher }) {
 // ── página ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
 	const { config } = useConfig();
+	const navigate = useNavigate();
 	const [busca, setBusca] = useState("");
 
 	const { banner1, banner2, grid1, grid2, exibirBanner,
@@ -84,7 +86,7 @@ export default function LandingPage() {
 						<button className={styles.buscaMenuBtn}><FiMenu size={16}/></button>
 					</div>
 					<div className={styles.headerActions}>
-						<button className={styles.headerBtn}><FiUser size={16}/> Login / Registro</button>
+						<button className={styles.headerBtn} onClick={() => navigate("/entrar")}><FiUser size={16}/> Login / Registro</button>
 						<button className={styles.headerBtn}><FiShoppingCart size={16}/> Carrinho</button>
 					</div>
 				</div>
