@@ -7,6 +7,7 @@ import { vendedorRoutes } from "./vendedor.routes.js";
 import { vendaRoutes } from "./venda.routes.js";
 import { movimentacaoEstoqueRoutes } from "./movimentacao_estoque.routes.js";
 import { dashboardRoutes } from "./dashboard.routes.js";
+import { relatorioRoutes } from "./relatorio.routes.js";
 
 const routes = Router();
 
@@ -18,5 +19,6 @@ routes.use("/vendedores", vendedorRoutes);
 routes.use("/vendas", vendaRoutes);
 routes.use("/movimentacoes", movimentacaoEstoqueRoutes);
 routes.use("/dashboard", dashboardRoutes);
+routes.use("/relatorios", relatorioRoutes);
 
 export { routes };
