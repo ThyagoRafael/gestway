@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { FiCalendar, FiChevronDown } from "react-icons/fi";
+import {
+	getRelatorioVendasMensais,
+	getRelatorioInventario,
+	getRelatorioDesempenhoVendedores,
+	getRelatorioMovimentacoes,
+} from "../../services/relatorios";
 import styles from "./Relatorios.module.css";
 
 // ── dados mock – trocar por fetch à API quando backend estiver pronto ──────
@@ -36,6 +42,7 @@ const RELATORIOS = [
 		descricao: "Resumo de faturamento e quantidade vendida por dia para o período selecionado",
 		dados: MOCK_VENDAS_MENSAIS,
 		nomeArquivo: "relatorio_vendas",
+		fetchFn: getRelatorioVendasMensais,
 	},
 	{
 		id: "estoque",
@@ -43,6 +50,7 @@ const RELATORIOS = [
 		descricao: "Lista completa de produtos, quantidade e valor total em estoque para o período selecionado",
 		dados: MOCK_ESTOQUE,
 		nomeArquivo: "inventario_estoque",
+		fetchFn: getRelatorioInventario,
 	},
 	{
 		id: "vendedores",
@@ -50,6 +58,7 @@ const RELATORIOS = [
 		descricao: "Ranking de vendas e comissões dos vendedores para o período selecionado",
 		dados: MOCK_VENDEDORES,
 		nomeArquivo: "desempenho_vendedores",
+		fetchFn: getRelatorioDesempenhoVendedores,
 	},
 	{
 		id: "movimentacoes",
@@ -57,6 +66,7 @@ const RELATORIOS = [
 		descricao: "Entradas, saídas e ajustes de produtos para o período selecionado",
 		dados: MOCK_MOVIMENTACOES,
 		nomeArquivo: "movimentacoes_estoque",
+		fetchFn: getRelatorioMovimentacoes,
 	},
 ];
 
@@ -169,12 +179,23 @@ export default function Relatorios() {
 	const calInicioDrop = useDropdown();
 	const calFimDrop    = useDropdown();
 
-	const handleGerar = (relatorio) => {
-		const nomeArquivo = gerarExcel(relatorio, dataInicio, dataFim);
-		setHistorico(prev => [
-			{ nome: relatorio.titulo, arquivo: nomeArquivo, hora: new Date().toLocaleTimeString("pt-BR") },
-			...prev,
-		]);
+	const handleGerar = async (relatorio) => {
+		try {
+			// tenta buscar da API; se falhar, usa mock
+			const dadosReais = relatorio.fetchFn
+				? await relatorio.fetchFn().catch(() => null)
+				: null;
+			const relatorioFinal = dadosReais
+				? { ...relatorio, dados: dadosReais }
+				: relatorio;
+			const nomeArquivo = gerarExcel(relatorioFinal, dataInicio, dataFim);
+			setHistorico(prev => [
+				{ nome: relatorio.titulo, arquivo: nomeArquivo, hora: new Date().toLocaleTimeString("pt-BR") },
+				...prev,
+			]);
+		} catch (e) {
+			console.error("Erro ao gerar relatório:", e);
+		}
 	};
 
 	return (
