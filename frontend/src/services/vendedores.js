@@ -17,14 +17,15 @@ function mapVendedor(v) {
 		id:               v.id_vendedor,
 		nome:             v.nome_completo_vendedor,
 		email:            v.email_vendedor,
-		metaMes:          Number(v.meta_mensal_vendedor ?? 0),
-		taxaComissao:     Number(v.taxa_comissao_vendedor ?? 0),
+		cpf: v.cpf_vendedor,
+		metaMes:          v.meta_mensal_vendedor ?? "0",
+		taxaComissao:     v.taxa_comissao_vendedor ?? "0",
 		vendaMes,
 		qtdVendas:        (v.venda ?? []).length,
 		comissaoMes,
 		comissaoPendente: 0,
 		statusComissao:   "aprovado",
-		foto:             null,
+		foto:             v.foto_url_vendedor,
 	};
 }
 
@@ -35,19 +36,21 @@ export async function getVendedores() {
 }
 
 /** POST /api/vendedores — { name, email, monthlyTarget, commissionRate } */
-export async function createVendedor({ name, email, monthlyTarget, commissionRate }) {
+export async function createVendedor(formData) {
 	const data = await apiFetch("/vendedores", {
 		method: "POST",
-		body: JSON.stringify({ name, email, monthlyTarget, commissionRate }),
+		body: formData,
 	});
 	return mapVendedor(data);
 }
 
 /** PATCH /api/vendedores/:id */
-export async function updateVendedor(id, { name, email, monthlyTarget, commissionRate }) {
+export async function updateVendedor(id, formData) {
 	const data = await apiFetch(`/vendedores/${id}`, {
 		method: "PATCH",
-		body: JSON.stringify({ name, email, monthlyTarget, commissionRate }),
+		body: formData,
 	});
+
+	
 	return mapVendedor(data);
 }

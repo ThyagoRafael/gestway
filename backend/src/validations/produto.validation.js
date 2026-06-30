@@ -11,7 +11,8 @@ export const createProdutoSchema = z.object({
 	name: z.string().min(3),
 	idCategoria: z.coerce.number().int().positive(),
 	price: precoSchema,
-	stock: z.coerce.number().int().positive(),
+	initialStock: z.coerce.number().int().positive(),
+	minStock: z.coerce.number().int().positive(),
 	description: z
 		.string()
 		.trim()
@@ -24,7 +25,8 @@ export const updateProdutoSchema = z
 		name: z.string().min(3).optional(),
 		idCategoria: z.coerce.number().int().positive().optional(),
 		price: precoSchema.optional(),
-		stock: z.coerce.number().int().positive().optional(),
+		initialStock: z.coerce.number().int().positive(),
+		minStock: z.coerce.number().int().positive(),
 		description: z
 			.string()
 			.trim()

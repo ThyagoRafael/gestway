@@ -20,16 +20,16 @@ function formatarData(iso) {
 function mapVoucher(v) {
 	return {
 		id:        v.id_voucher,
-		codigo:    v.codigo_voucher,
-		desconto:  `${v.porcentagem_desconto_voucher}%`,
-		desconto_raw: Number(v.porcentagem_desconto_voucher),
+		code:    v.codigo_voucher,
+		discount:  `${v.porcentagem_desconto_voucher}%`,
+		discount_raw: Number(v.porcentagem_desconto_voucher),
 		status:    calcStatus(v.data_inicio_voucher, v.data_validade_voucher),
 		criadoEm: formatarData(v.data_inicio_voucher),
 		validade:  formatarData(v.data_validade_voucher),
 		// datas ISO para enviar no PATCH
 		initialDate:    v.data_inicio_voucher,
 		expirationDate: v.data_validade_voucher,
-		descricao:  v.descricao_voucher ?? "",
+		description:  v.descricao_voucher ?? "",
 	};
 }
 

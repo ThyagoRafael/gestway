@@ -11,7 +11,6 @@ const voucherBaseSchema = z.object({
 	description: z
 		.string()
 		.trim()
-		.min(3)
 		.transform((value) => (value === "" ? null : value))
 		.optional(),
 	initialDate: dateSchema,

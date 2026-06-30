@@ -19,6 +19,13 @@ class CategoriaController {
 	async listCategoria(req, res) {
 		const categorias = await prisma.categoria.findMany({
 			orderBy: { data_atualizacao_categoria: "desc" },
+			include: {
+				_count: {
+					select: {
+						produto: true,
+					},
+				},
+			},
 		});
 
 		res.status(200).json(categorias);

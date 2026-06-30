@@ -13,10 +13,14 @@ export async function apiFetch(path, options = {}) {
 	const token = localStorage.getItem("gw_token");
 
 	const headers = {
-		"Content-Type": "application/json",
 		...(token ? { Authorization: `Bearer ${token}` } : {}),
 		...options.headers,
 	};
+
+	if (!(options.body instanceof FormData)) {
+		headers["Content-Type"] = "application/json";
+	}
+
 
 	const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 

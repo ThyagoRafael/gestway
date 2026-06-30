@@ -12,7 +12,6 @@
 	"type": "module",
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@types/node": "^26.0.1",
 		"eslint": "^10.4.1",
 		"globals": "^17.6.0",
 		"nodemon": "^3.1.14",
@@ -22,10 +21,13 @@
 		"@prisma/adapter-mariadb": "^7.8.0",
 		"@prisma/client": "^7.8.0",
 		"bcrypt": "^6.0.0",
+		"cloudinary": "^2.10.0",
 		"cors": "^2.8.6",
+		"cpf-cnpj-validator": "^2.1.2",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"jsonwebtoken": "^9.0.3",
+		"multer": "^2.2.0",
 		"nodemailer": "^8.0.11",
 		"zod": "^4.4.3"
 	}

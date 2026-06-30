@@ -30,12 +30,10 @@ model usuario {
 }
 
 model administrador {
-  id_administrador Int @id @unique(map: "id_administrador_UNIQUE") @default(autoincrement())
-  id_usuario       Int @unique
-
-  data_criacao_administrador     DateTime? @db.DateTime(0)
-  data_atualizacao_administrador DateTime? @db.DateTime(0)
-
+  id_administrador                                                       Int                               @id @unique(map: "id_administrador_UNIQUE") @default(autoincrement())
+  id_usuario                                                             Int                               @unique
+  data_criacao_administrador                                             DateTime?                         @db.DateTime(0)
+  data_atualizacao_administrador                                         DateTime?                         @db.DateTime(0)
   usuario                                                                usuario                           @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
   banner_banner_atualizado_por_id_administradorToadministrador           banner[]                          @relation("banner_atualizado_por_id_administradorToadministrador")
   banner_banner_criado_por_id_administradorToadministrador               banner[]                          @relation("banner_criado_por_id_administradorToadministrador")
@@ -97,10 +95,10 @@ model carrinho {
   id_carrinho     BigInt                   @id @default(autoincrement())
   comprador_tipo  carrinho_comprador_tipo  @default(COMPRADOR)
   comprador_id    Int
-  id_cliente      Int?
   status_carrinho carrinho_status_carrinho @default(ABERTO)
   criado_em       DateTime                 @default(now()) @db.DateTime(0)
   atualizado_em   DateTime                 @default(now()) @db.DateTime(0)
+  id_cliente      Int?
   cliente         cliente?                 @relation(fields: [id_cliente], references: [id_cliente], onDelete: Restrict, onUpdate: Restrict, map: "fk_carrinho_cliente")
   carrinho_item   carrinho_item[]
   venda           venda[]
@@ -144,14 +142,14 @@ model categoria {
 }
 
 model cliente {
-  id_cliente     Int                    @id @default(autoincrement())
-  id_usuario     Int                    @unique
   status_cliente cliente_status_cliente @default(ATIVO)
   criado_em      DateTime               @default(now()) @db.DateTime(0)
   atualizado_em  DateTime               @updatedAt @db.DateTime(0)
+  id_usuario     Int                    @unique
+  id_cliente     Int                    @id @default(autoincrement())
   carrinho       carrinho[]
-  venda          venda[]
   usuario        usuario                @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  venda          venda[]
 
   @@index([criado_em, atualizado_em], map: "idx_cliente_datas")
   @@index([status_cliente], map: "idx_cliente_status")
@@ -261,7 +259,7 @@ model movimentacao_estoque {
   data_hora         DateTime                               @default(now()) @db.DateTime(0)
   id_vendedor       Int
   produto           produto                                @relation(fields: [id_produto], references: [id_produto], onUpdate: Restrict, map: "fk_mov_produto")
-  vendedor          vendedor?                              @relation(fields: [id_vendedor], references: [id_vendedor], onDelete: Restrict, onUpdate: Restrict, map: "fk_mov_vendedor")
+  vendedor          vendedor                               @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_mov_vendedor")
 
   @@index([data_hora], map: "idx_mov_data")
   @@index([id_vendedor], map: "idx_mov_id_vendedor")
@@ -272,16 +270,18 @@ model movimentacao_estoque {
 model produto {
   id_produto               Int                    @id @unique(map: "idproduto_UNIQUE") @default(autoincrement())
   nome_produto             String                 @db.VarChar(150)
-  preco_produto            Decimal                @db.Decimal(10, 2)
   imagem_produto           String?                @db.VarChar(255)
   descricao_produto        String?                @db.VarChar(250)
   id_categoria             Int?
   status_produto           produto_status_produto @default(DISPONIVEL)
   ativo_produto            Boolean                @default(true)
   controla_estoque_produto Boolean                @default(true)
-  estoque_produto          Int
   data_criacao_produto     DateTime               @default(now()) @db.DateTime(0)
   data_atualizacao_produto DateTime               @updatedAt @db.DateTime(0)
+  preco_produto            Decimal                @db.Decimal(10, 2)
+  estoque_inicial_produto  Int
+  estoque_minimo_produto   Int
+  estoque_atual_produto    Int
   carrinho_item            carrinho_item[]
   movimentacao_estoque     movimentacao_estoque[]
   categoria                categoria?             @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_produto_categoria")
@@ -387,7 +387,6 @@ model token_recuperacao_senha {
 model venda {
   id_venda         BigInt                 @id @default(autoincrement())
   numero_pedido    String                 @unique(map: "uq_venda_numero_pedido") @db.VarChar(32)
-  id_cliente       Int
   id_vendedor      Int
   id_carrinho      BigInt?
   status_pagamento venda_status_pagamento @default(AGUARDANDO)
@@ -396,9 +395,10 @@ model venda {
   total_liquido    Decimal                @default(0.00) @db.Decimal(10, 2)
   criado_em        DateTime               @default(now()) @db.DateTime(0)
   atualizado_em    DateTime               @updatedAt @db.DateTime(0)
+  id_cliente       Int
   carrinho         carrinho?              @relation(fields: [id_carrinho], references: [id_carrinho], onUpdate: Restrict, map: "fk_venda_carrinho")
   cliente          cliente                @relation(fields: [id_cliente], references: [id_cliente], onUpdate: Restrict, map: "fk_venda_cliente")
-  vendedor         vendedor?              @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_venda_vendedor")
+  vendedor         vendedor               @relation(fields: [id_vendedor], references: [id_vendedor], onUpdate: Restrict, map: "fk_venda_vendedor")
   venda_item       venda_item[]
 
   @@index([id_carrinho], map: "idx_venda_carrinho")
@@ -435,6 +435,7 @@ model vendedor {
   ativo_vendedor            Boolean                    @default(true)
   data_criacao_vendedor     DateTime                   @default(now()) @db.DateTime(0)
   data_atualizacao_vendedor DateTime                   @updatedAt @db.DateTime(0)
+  cpf_vendedor              String                     @unique(map: "cpf_vendedor_UNIQUE") @db.VarChar(14)
   comissao_mensal_vendedor  comissao_mensal_vendedor[]
   movimentacao_estoque      movimentacao_estoque[]
   venda                     venda[]
@@ -478,12 +479,6 @@ enum geracao_relatorio_tipo_relatorio {
   INVENTARIO_ESTOQUE_EXCEL
   DESEMPENHO_VENDEDORES_PDF
   MOVIMENTACOES_ESTOQUE_EXCEL
-}
-
-enum token_recuperacao_senha_usuario_tipo {
-  ADMINISTRADOR
-  VENDEDOR
-  COMPRADOR
 }
 
 enum movimentacao_estoque_tipo_movimentacao {
@@ -549,11 +544,6 @@ enum relatorio_vendas_mensais_granularidade_resumo {
 enum categoria_status_categoria {
   DISPONIVEL
   INATIVO
-}
-
-enum movimentacao_estoque_responsavel_tipo {
-  ADMINISTRADOR
-  VENDEDOR
 }
 
 enum venda_status_pagamento {

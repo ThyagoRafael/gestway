@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import z from "zod";
+import { cpf } from "cpf-cnpj-validator";
 
 const monthlyTargetSchema = z
 	.string()
@@ -13,12 +14,18 @@ const commissionRateSchema = z
 	.transform((value) => new Prisma.Decimal(value))
 	.refine((value) => value.gt(0) && value.lt(100), "A taxa de comissão deve estar entre 0 e 100");
 
-const vendedorBaseSchema = z.object({
-	name: z.string().min(3, "Digite um nome válido"),
-	email: z.email("Digite um email válido"),
-	monthlyTarget: monthlyTargetSchema,
-	commissionRate: commissionRateSchema,
-});
+const vendedorBaseSchema = z
+	.object({
+		name: z.string().min(3, "Digite um nome válido"),
+		email: z.email("Digite um email válido"),
+		cpf: z
+			.string()
+			.transform((value) => value.replace(/\D/g, ""))
+			.refine(cpf.isValid, "O CPF está inválido"),
+		monthlyTarget: monthlyTargetSchema,
+		commissionRate: commissionRateSchema,
+	})
+	.strict();
 
 export const createVendedorSchema = vendedorBaseSchema;
 

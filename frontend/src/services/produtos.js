@@ -11,18 +11,18 @@ function calcStatus(estoque, estoqueMinimo = 0) {
 }
 
 function mapProduto(p) {
-	const estoque = Number(p.estoque_produto ?? 0);
 	return {
 		id:            p.id_produto,
 		nome:          p.nome_produto,
-		preco:         Number(p.preco_produto ?? 0),
+		preco:         p.preco_produto ?? "0",
 		descricao:     p.descricao_produto ?? "",
-		estoque,
-		estoqueMinimo: 0, // backend não expõe estoque mínimo ainda
+		estoqueInicial: p.estoque_inicial_produto,
+		estoqueMinimo: p.estoque_minimo_produto,
+		estoqueAtual: p.estoque_atual_produto,
 		idCategoria:   p.id_categoria,
 		categoria:     p.categoria?.nome_categoria ?? "",
-		status:        calcStatus(estoque),
-		imagem:        null,
+		status:        calcStatus(p.estoque_inicial_produto),
+		imagem:        p.imagem_produto,
 	};
 }
 
@@ -36,10 +36,10 @@ export async function getProdutos() {
  * POST /api/produtos  — exige token
  * { name, price, description, idCategoria, stock }
  */
-export async function createProduto({ name, price, description, idCategoria, stock }) {
+export async function createProduto(formData) {
 	const data = await apiFetch("/produtos", {
 		method: "POST",
-		body: JSON.stringify({ name, price, description, idCategoria, stock }),
+		body: formData,
 	});
 	return mapProduto(data);
 }
@@ -50,9 +50,13 @@ export async function createProduto({ name, price, description, idCategoria, sto
  * Atualizar stock gera movimentação automática no backend.
  */
 export async function updateProduto(id, fields) {
+	for (const [key, value] of fields.entries()) {
+		console.log(key, value);
+	}
+
 	const data = await apiFetch(`/produtos/${id}`, {
 		method: "PATCH",
-		body: JSON.stringify(fields),
+		body: fields,
 	});
 	return mapProduto(data);
 }

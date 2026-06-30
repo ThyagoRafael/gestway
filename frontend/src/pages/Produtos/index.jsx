@@ -79,7 +79,7 @@ function Modal({ titulo, subtitulo, onClose, children }) {
 }
 
 function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
-	const empty = { nome: "", idCategoria: "", preco: "", estoqueInicial: "", estoqueMinimo: "", imagem: null, descricao: "" };
+	const empty = { nome: "", idCategoria: "", preco: "", estoqueInicial: "", estoqueMinimo: "", imagem: "", descricao: "" };
 	const [form, setForm]       = useState(inicial ?? empty);
 	const [preview, setPreview] = useState(inicial?.imagem ?? null);
 	const descMax = 250;
@@ -90,7 +90,7 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 		if (!file) return;
 		const url = URL.createObjectURL(file);
 		setPreview(url);
-		setForm((f) => ({ ...f, imagem: url }));
+		setForm((f) => ({ ...f, imagem: file }));
 	};
 
 	return (
@@ -232,16 +232,22 @@ export default function Produtos() {
 	const handleNovo = async (form) => {
 		setLoadingForm(true);
 		try {
-			const novo = await createProduto({
-				name:        form.nome,
-				price:       Number(form.preco),
-				description: form.descricao,
-				idCategoria: Number(form.idCategoria),
-				stock:       Number(form.estoqueInicial),
-			});
+			const formData = new FormData();
+
+			formData.append("name", form.nome);
+			formData.append("price", form.preco);
+			formData.append("description", form.descricao);
+			formData.append("idCategoria", form.idCategoria);
+			formData.append("initialStock", form.estoqueInicial);
+			formData.append("minStock", form.estoqueMinimo);
+
+			if (form.imagem) {
+				formData.append("produtoImage", form.imagem);
+			}
+
+			const novo = await createProduto(formData);
 			// recalcula status com estoque mínimo local
-			const min = Number(form.estoqueMinimo || 0);
-			setProdutos((prev) => [...prev, { ...novo, estoqueMinimo: min, status: calcStatus(novo.estoque, min), imagem: form.imagem }]);
+			setProdutos((prev) => [...prev, { ...novo, status: calcStatus(novo.estoque, novo.estoqueMinimo) }]);
 			setModalNovo(false);
 			setToast({ msg: "Produto adicionado com sucesso!", tipo: "sucesso" });
 		} catch (err) {
@@ -255,18 +261,24 @@ export default function Produtos() {
 	const handleEditar = async (form) => {
 		setLoadingForm(true);
 		try {
-			const atualizado = await updateProduto(modalEditar.id, {
-				name:        form.nome,
-				price:       Number(form.preco),
-				description: form.descricao,
-				idCategoria: Number(form.idCategoria),
-				stock:       Number(form.estoqueInicial),
-			});
-			const min = Number(form.estoqueMinimo || 0);
+			const formData = new FormData();
+
+			formData.append("name", form.nome);
+			formData.append("price", form.preco);
+			formData.append("description", form.descricao);
+			formData.append("idCategoria", form.idCategoria);
+			formData.append("initialStock", form.estoqueInicial);
+			formData.append("minStock", form.estoqueMinimo);
+
+			if (form.imagem instanceof File) {
+				formData.append("produtoImage", form.imagem);
+			}
+
+			const atualizado = await updateProduto(modalEditar.id, formData);
 			setProdutos((prev) =>
 				prev.map((p) =>
 					p.id === modalEditar.id
-						? { ...atualizado, estoqueMinimo: min, status: calcStatus(atualizado.estoque, min), imagem: form.imagem }
+						? { ...atualizado, status: calcStatus(atualizado.estoque, atualizado.estoqueMinimo) }
 						: p
 				)
 			);
@@ -367,7 +379,7 @@ export default function Produtos() {
 									</div>
 								</td>
 								<td>{p.categoria}</td>
-								<td>{p.estoque}</td>
+								<td>{p.estoqueAtual}</td>
 								<td>{fmt(p.preco)}</td>
 								<td><StatusBadge status={p.status} /></td>
 								<td>
@@ -395,7 +407,7 @@ export default function Produtos() {
 							nome:           modalEditar.nome,
 							idCategoria:    modalEditar.idCategoria,
 							preco:          modalEditar.preco,
-							estoqueInicial: modalEditar.estoque,
+							estoqueInicial: modalEditar.estoqueInicial,
 							estoqueMinimo:  modalEditar.estoqueMinimo,
 							imagem:         modalEditar.imagem,
 							descricao:      modalEditar.descricao,

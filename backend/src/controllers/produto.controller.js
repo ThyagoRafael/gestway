@@ -2,10 +2,12 @@ import { prisma } from "../config/prisma.js";
 import { createProdutoSchema, updateProdutoSchema } from "../validations/produto.validation.js";
 import { AppError } from "../errors/AppError.js";
 import { mapFields } from "../helpers/mapField.js";
+import { deleteFromCloudinary, uploadToCloudinary } from "../helpers/cloudinary.js";
 
 class ProdutoController {
 	async create(req, res) {
 		const bodyData = createProdutoSchema.parse(req.body);
+		const produtoImage = req.file;
 
 		const categoria = await prisma.categoria.findUnique({
 			where: {
@@ -17,17 +19,45 @@ class ProdutoController {
 			throw new AppError("Categoria não encontrada", 404);
 		}
 
-		const newProduto = await prisma.produto.create({
-			data: {
-				nome_produto: bodyData.name,
-				preco_produto: bodyData.price,
-				descricao_produto: bodyData.description,
-				id_categoria: bodyData.idCategoria,
-				estoque_produto: bodyData.stock,
-			},
-		});
+		if (bodyData.initialStock < bodyData.minStock) {
+			throw new AppError("O estoque inicial deve ser maior que o estoque mínimo", 400);
+		}
 
-		res.status(201).json(newProduto);
+		let uploadResult = null;
+
+		try {
+			if (produtoImage) {
+				uploadResult = await uploadToCloudinary(produtoImage.buffer, "gestway/produtos");
+			}
+
+			const newProduto = await prisma.produto.create({
+				data: {
+					nome_produto: bodyData.name,
+					preco_produto: bodyData.price,
+					descricao_produto: bodyData.description,
+					id_categoria: bodyData.idCategoria,
+					estoque_inicial_produto: bodyData.initialStock,
+					estoque_minimo_produto: bodyData.minStock,
+					estoque_atual_produto: bodyData.initialStock,
+					imagem_produto: uploadResult ? uploadResult.secure_url : null,
+				},
+				include: {
+					categoria: {
+						select: {
+							nome_categoria: true,
+						},
+					},
+				},
+			});
+
+			res.status(201).json(newProduto);
+		} catch (error) {
+			if (uploadResult) {
+				await deleteFromCloudinary(uploadResult.public_id);
+			}
+
+			throw error;
+		}
 	}
 
 	async list(req, res) {
@@ -46,14 +76,14 @@ class ProdutoController {
 
 	async update(req, res) {
 		const produtoId = Number(req.params.produtoId);
-		const { userId } = req.user;
 		const bodyData = updateProdutoSchema.parse(req.body);
 		const produtoFieldMap = {
 			name: "nome_produto",
 			price: "preco_produto",
 			description: "descricao_produto",
 			idCategoria: "id_categoria",
-			stock: "estoque_produto",
+			initialStock: "estoque_inicial_produto",
+			minStock: "estoque_minimo_produto",
 		};
 
 		const prismaData = mapFields(bodyData, produtoFieldMap);
@@ -68,42 +98,31 @@ class ProdutoController {
 			throw new AppError("Produto não encontrado", 404);
 		}
 
-		const estoqueEnviado = bodyData.stock !== undefined;
+		// GERENCIAMENTO DA IMAGEM
 
-		if (!estoqueEnviado) {
-			const updatedProduto = await prisma.produto.update({
-				where: {
-					id_produto: produtoId,
-				},
-				data: prismaData,
-			});
+		let imageData = null;
 
-			return res.status(200).json(updatedProduto);
+		if (req.file) {
+			imageData = await uploadToCloudinary(req.file.buffer, "gestway/produtos");
 		}
 
-		const diferenca = bodyData.stock - produto.estoque_produto;
-
-		const updatedProduto = await prisma.$transaction(async (tx) => {
-			const updatedProduto = await tx.produto.update({
-				where: {
-					id_produto: produtoId,
-				},
-				data: prismaData,
-			});
-
-			if (diferenca !== 0) {
-				await tx.movimentacao_estoque.create({
-					data: {
-						id_produto: produtoId,
-						quantidade: Math.abs(diferenca),
-						id_vendedor: userId,
-						tipo_movimentacao: diferenca > 0 ? "ENTRADA" : "SAIDA",
-						motivo: "Correção de inventário",
+		const updatedProduto = await prisma.produto.update({
+			where: {
+				id_produto: produtoId,
+			},
+			data: {
+				...prismaData,
+				...(imageData && {
+					imagem_produto: imageData.secure_url,
+				}),
+			},
+			include: {
+				categoria: {
+					select: {
+						nome_categoria: true,
 					},
-				});
-			}
-
-			return updatedProduto;
+				},
+			},
 		});
 
 		return res.status(200).json(updatedProduto);

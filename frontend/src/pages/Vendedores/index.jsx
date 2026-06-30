@@ -92,7 +92,7 @@ function Modal({ titulo, subtitulo, onClose, children }) {
 
 function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 	const [form, setForm] = useState(
-		inicial ?? { nome: "", email: "", cpf: "", metaMes: "", taxaComissao: "", foto: null }
+		inicial ?? { nome: "", email: "", cpf: "", metaMes: "", taxaComissao: "", foto: "" }
 	);
 	const [cpfErro, setCpfErro] = useState(null);
 	const [fotoPreview, setFotoPreview] = useState(inicial?.foto ?? null);
@@ -110,7 +110,7 @@ function VendedorForm({ inicial, onSubmit, labelBtn, loading }) {
 		if (!file) return;
 		const url = URL.createObjectURL(file);
 		setFotoPreview(url);
-		setForm((f) => ({ ...f, foto: url }));
+		setForm((f) => ({ ...f, foto: file }));
 	};
 
 	const handleSubmit = (e) => {
@@ -254,14 +254,20 @@ export default function Vendedores() {
 	const handleNovo = async (form) => {
 		setLoadingForm(true);
 		try {
-			const novo = await createVendedor({
-				name:           form.nome,
-				email:          form.email,
-				cpf:            form.cpf,
-				monthlyTarget:  Number(form.metaMes),
-				commissionRate: Number(form.taxaComissao),
-			});
-			setVendedores((prev) => [...prev, { ...novo, foto: form.foto }]);
+			const formData = new FormData();
+
+			formData.append("name", form.nome);
+			formData.append("email", form.email);
+			formData.append("cpf", form.cpf);
+			formData.append("monthlyTarget", form.metaMes);
+			formData.append("commissionRate", form.taxaComissao);
+
+			if (form.foto instanceof File) {
+				formData.append("vendedorImage", form.foto);
+			}
+
+			const novo = await createVendedor(formData);
+			setVendedores((prev) => [...prev, novo ]);
 			setModalNovo(false);
 			setToast({ msg: "Vendedor adicionado com sucesso!", tipo: "sucesso" });
 		} catch (err) {
@@ -274,15 +280,21 @@ export default function Vendedores() {
 	const handleEditar = async (form) => {
 		setLoadingForm(true);
 		try {
-			const atualizado = await updateVendedor(modalEditar.id, {
-				name:           form.nome,
-				email:          form.email,
-				cpf:            form.cpf,
-				monthlyTarget:  Number(form.metaMes),
-				commissionRate: Number(form.taxaComissao),
-			});
+			const formData = new FormData();
+
+			formData.append("name", form.nome);
+			formData.append("email", form.email);
+			formData.append("cpf", form.cpf);
+			formData.append("monthlyTarget", form.metaMes);
+			formData.append("commissionRate", form.taxaComissao);
+
+			if (form.foto instanceof File) {
+				formData.append("vendedorImage", form.foto);
+			}
+
+			const atualizado = await updateVendedor(modalEditar.id, formData)
 			setVendedores((prev) =>
-				prev.map((v) => v.id === modalEditar.id ? { ...atualizado, foto: form.foto } : v)
+				prev.map((v) => v.id === modalEditar.id ? { ...atualizado } : v)
 			);
 			setModalEditar(null);
 			setToast({ msg: "Vendedor editado com sucesso!", tipo: "sucesso" });
@@ -350,7 +362,8 @@ export default function Vendedores() {
 					)}
 				</div>
 
-				<button className={styles.novoBtn} onClick={() => setModalNovo(true)}>+ Novo Vendedor</button>
+				<button className={styles.novoBtn} onClick={() => {
+					setModalNovo(true)}}>+ Novo Vendedor</button>
 			</div>
 
 			<div className={styles.tableWrap}>

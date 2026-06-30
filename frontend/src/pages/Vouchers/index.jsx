@@ -10,8 +10,8 @@ const STATUS_LIST   = ["Ativo", "Inativo", "Expirado"];
 const LINHAS_OPCOES = [5, 10, 20, 50];
 
 const TODAS_COLUNAS = [
-	{ key: "codigo",   label: "Código do Cupom" },
-	{ key: "desconto", label: "Desconto"        },
+	{ key: "code",   label: "Código do Cupom" },
+	{ key: "discount", label: "Desconto"        },
 	{ key: "status",   label: "Status"          },
 	{ key: "criadoEm", label: "Criado em"       },
 	{ key: "validade", label: "Validade"        },
@@ -54,15 +54,15 @@ function brToIso(dataBr) {
 }
 
 function VoucherModal({ inicial, onClose, onSalvar, loading }) {
-	const empty = { codigo: "", desconto: "", initialDate: "", expirationDate: "", descricao: "" };
+	const empty = { code: "", discount: "", initialDate: "", expirationDate: "", description: "" };
 	const [form, setForm] = useState(
 		inicial
 			? {
-				codigo:         inicial.codigo,
-				desconto:       String(inicial.desconto_raw),
+				code:         inicial.code,
+				discount:       String(inicial.discount_raw),
 				initialDate:    inicial.initialDate?.slice(0, 10) ?? "",
 				expirationDate: inicial.expirationDate?.slice(0, 10) ?? "",
-				descricao:      inicial.descricao,
+				description:      inicial.description,
 			}
 			: empty
 	);
@@ -89,13 +89,13 @@ function VoucherModal({ inicial, onClose, onSalvar, loading }) {
 				<form className={styles.modalForm} onSubmit={(e) => { e.preventDefault(); onSalvar(form); }}>
 					<div className={styles.formGroup}>
 						<label>* Código do cupom</label>
-						<input value={form.codigo} onChange={set("codigo")} required placeholder="Ex: BEMVINDO10" />
+						<input value={form.code} onChange={set("code")} required placeholder="Ex: BEMVINDO10" />
 					</div>
 
 					<div className={styles.formRow}>
 						<div className={styles.formGroup}>
 							<label>* Desconto (%)</label>
-							<input type="number" min="1" max="100" step="0.1" value={form.desconto} onChange={set("desconto")} required />
+							<input type="number" min="1" max="100" step="0.1" value={form.discount} onChange={set("discount")} required />
 						</div>
 						<div className={styles.formGroup} />
 					</div>
@@ -115,11 +115,11 @@ function VoucherModal({ inicial, onClose, onSalvar, loading }) {
 						<label>Descrição</label>
 						<textarea
 							maxLength={descMax}
-							value={form.descricao}
-							onChange={set("descricao")}
+							value={form.description}
+							onChange={set("description")}
 							rows={3}
 						/>
-						<span className={styles.charCount}>{form.descricao.length}/{descMax}</span>
+						<span className={styles.charCount}>{form.description.length}/{descMax}</span>
 					</div>
 
 					<div className={styles.modalFooter}>
@@ -178,7 +178,7 @@ export default function Vouchers() {
 	};
 
 	let dados = vouchers.filter((v) =>
-		[v.codigo, v.desconto, v.status].join(" ").toLowerCase().includes(busca.toLowerCase())
+		[v.code, v.discount, v.status].join(" ").toLowerCase().includes(busca.toLowerCase())
 	);
 	if (filtroStatus.length) dados = dados.filter((v) => filtroStatus.includes(v.status));
 
@@ -195,11 +195,11 @@ export default function Vouchers() {
 		setLoadingForm(true);
 		try {
 			const novo = await createVoucher({
-				code:           form.codigo,
-				discount:       Number(form.desconto),
+				code:           form.code,
+				discount:       Number(form.discount),
 				initialDate:    form.initialDate,
 				expirationDate: form.expirationDate,
-				description:    form.descricao,
+				description:    form.description,
 			});
 			setVouchers((prev) => [novo, ...prev]);
 			setModalNovo(false);
@@ -215,11 +215,11 @@ export default function Vouchers() {
 		setLoadingForm(true);
 		try {
 			const atualizado = await updateVoucher(modalEditar.id, {
-				code:           form.codigo,
-				discount:       Number(form.desconto),
+				code:           form.code,
+				discount:       Number(form.discount),
 				initialDate:    form.initialDate,
 				expirationDate: form.expirationDate,
-				description:    form.descricao,
+				description:    form.description,
 			});
 			setVouchers((prev) => prev.map((v) => v.id === modalEditar.id ? atualizado : v));
 			setModalEditar(null);
