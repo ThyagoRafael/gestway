@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import LandingPage   from "../pages/LandingPage";
+
 import MainLayout    from "../templates/MainLayout";
 import SidebarLayout from "../templates/SidebarLayout";
 import PrivateRoute  from "../components/PrivateRoute";
@@ -20,12 +21,15 @@ import Relatorios    from "../pages/Relatorios";
 import Vouchers      from "../pages/Vouchers";
 import Configuracoes from "../pages/Configuracoes";
 import Perfil        from "../pages/Perfil";
+import Carrinho 	 from "../pages/Carrinho";
 
 export default function Router() {
 	return (
 		<Routes>
 			{/* Landing page pública */}
 			<Route path="/" element={<LandingPage />} />
+			{/* Carrinho da landing page */}
+			<Route path="/carrinho" element={<Carrinho />} />
 
 			{/* Rotas de autenticação — sem sidebar */}
 			<Route element={<MainLayout />}>

@@ -2,37 +2,8 @@ import { createContext, useContext, useState } from "react";
 
 const CarrinhoContext = createContext(null);
 
-// ── mock só para visualização — remova quando conectar ao backend ────────────
-const MOCK_ITENS = [
-	{
-		id:        1,
-		nome:      "Camisa Corinthians",
-		categoria: "Vestuário",
-		preco:     189.99,
-		imagem:    null,
-		qtd:       2,
-	},
-	{
-		id:        2,
-		nome:      "Plano GestWay",
-		categoria: "Software",
-		preco:     2000.00,
-		imagem:    null,
-		qtd:       1,
-	},
-	{
-		id:        3,
-		nome:      "Taça Mundial Palmeiras",
-		categoria: "Itens",
-		preco:     1234500.00,
-		imagem:    null,
-		qtd:       1,
-	},
-];
-
 export function CarrinhoProvider({ children }) {
-	// troque MOCK_ITENS por [] quando for para produção
-	const [itens, setItens] = useState(MOCK_ITENS);
+	const [itens, setItens] = useState([]);
 
 	const adicionar = (produto) => {
 		setItens(prev => {
@@ -57,7 +28,7 @@ export function CarrinhoProvider({ children }) {
 
 	const limpar = () => setItens([]);
 
-	const total    = itens.reduce((sum, i) => sum + Number(i.preco) * i.qtd, 0);
+	const total = itens.reduce((sum, i) => sum + Number(i.preco) * i.qtd, 0);
 	const qtdTotal = itens.reduce((sum, i) => sum + i.qtd, 0);
 
 	return (
