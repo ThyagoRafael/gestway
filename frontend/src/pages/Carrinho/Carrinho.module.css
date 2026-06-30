@@ -1,0 +1,387 @@
+.page {
+	min-height: 100vh;
+	background: #f9f9f9;
+	padding: 1.5rem 3rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+/* header */
+.header {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.titulo {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #111;
+}
+
+.backBtn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 14px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #555;
+}
+
+.backBtn:hover { border-color: #176FB8; color: #176FB8; }
+
+/* steps */
+.steps {
+	display: flex;
+	align-items: center;
+	gap: 0;
+}
+
+.step {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.85rem;
+	color: #aaa;
+}
+
+.stepAtivo { color: #176FB8; font-weight: 500; }
+
+.stepNum {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 2px solid #d1d5db;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.8rem;
+	font-weight: 600;
+	flex-shrink: 0;
+}
+
+.stepAtivo .stepNum { border-color: #176FB8; background: #176FB8; color: #fff; }
+
+.stepLine {
+	width: 60px;
+	height: 2px;
+	background: #e5e7eb;
+	margin: 0 8px;
+}
+
+.stepLineAtivo { background: #176FB8; }
+
+/* layout */
+.layout {
+	display: grid;
+	grid-template-columns: 1fr 340px;
+	gap: 1.5rem;
+	align-items: start;
+}
+
+.main {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+/* itens */
+.itensList {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.itemCard {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 1rem 1.25rem;
+}
+
+.itemThumb {
+	width: 70px;
+	height: 70px;
+	border-radius: 10px;
+	background: #f3f4f6;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.itemThumb img { width: 100%; height: 100%; object-fit: cover; }
+.itemLetra { font-size: 1.5rem; font-weight: 700; color: #176FB8; }
+
+.itemInfo { flex: 1; }
+.itemNome { font-size: 0.95rem; font-weight: 500; color: #111; }
+.itemCategoria { font-size: 0.8rem; color: #888; margin-top: 2px; }
+.itemPrecoUnit { font-size: 0.85rem; color: #555; margin-top: 4px; }
+
+.itemControles {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 4px 10px;
+}
+
+.itemControles button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #555;
+	display: flex;
+	align-items: center;
+}
+
+.itemControles button:hover { color: #176FB8; }
+.itemControles span { font-size: 0.95rem; font-weight: 500; min-width: 20px; text-align: center; }
+
+.itemTotal { font-size: 1rem; font-weight: 700; color: #111; min-width: 80px; text-align: right; }
+
+.itemRemover {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #aaa;
+	display: flex;
+	align-items: center;
+	padding: 4px;
+}
+
+.itemRemover:hover { color: #dc2626; }
+
+/* seções de etapa */
+.secao {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 1.5rem;
+}
+
+.secaoTitulo { font-size: 1rem; font-weight: 600; color: #111; margin-bottom: 1.25rem; }
+
+/* form grid */
+.formGrid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.formGroup { display: flex; flex-direction: column; gap: 4px; }
+.formGroup label { font-size: 0.85rem; color: #555; }
+.fullWidth { grid-column: 1 / -1; }
+
+.input {
+	padding: 9px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	outline: none;
+	background: #fff;
+	font-family: inherit;
+}
+
+.input:focus { border-color: #176FB8; }
+
+/* pagamento */
+.pagamentoWrap { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.metodos { display: flex; gap: 0.75rem; }
+
+.metodoBtn {
+	padding: 8px 18px;
+	border: 1.5px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 0.85rem;
+	cursor: pointer;
+	color: #555;
+}
+
+.metodoBtnAtivo { border-color: #176FB8; color: #176FB8; background: #eff3ff; font-weight: 500; }
+
+/* pix / boleto */
+.pixWrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; }
+.pixQR { width: 140px; height: 140px; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.pixQRInner { font-size: 4rem; }
+.pixLabel { font-size: 0.9rem; color: #333; }
+.pixSub { font-size: 0.8rem; color: #888; text-align: center; }
+.boletoWrap { padding: 1rem; background: #f9fafb; border-radius: 8px; }
+.boletoLabel { font-size: 0.9rem; color: #333; font-weight: 500; margin-bottom: 6px; }
+.boletoSub { font-size: 0.8rem; color: #888; }
+
+/* ações */
+.acoes { display: flex; justify-content: flex-end; }
+
+.proximoBtn {
+	padding: 11px 28px;
+	background: #176FB8;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.proximoBtn:hover:not(:disabled) { background: #1259a0; }
+.proximoBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* resumo */
+.resumo {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 1.25rem;
+	position: sticky;
+	top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.resumoTitulo { font-size: 1rem; font-weight: 600; color: #111; }
+
+.resumoItens { display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto; }
+
+.resumoItem { display: flex; align-items: center; gap: 10px; }
+
+.resumoItemThumb {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	background: #f3f4f6;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	font-weight: 700;
+	color: #176FB8;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.resumoItemThumb img { width: 100%; height: 100%; object-fit: cover; }
+.resumoItemInfo { flex: 1; }
+.resumoItemNome { font-size: 0.8rem; font-weight: 500; color: #111; }
+.resumoItemQtd { font-size: 0.75rem; color: #888; }
+.resumoItemPreco { font-size: 0.85rem; font-weight: 600; color: #111; white-space: nowrap; }
+
+/* voucher */
+.voucherWrap { display: flex; gap: 6px; }
+.voucherInput {
+	flex: 1;
+	padding: 8px 10px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	outline: none;
+	font-family: monospace;
+}
+.voucherInput:focus { border-color: #176FB8; }
+.voucherBtn {
+	padding: 8px 14px;
+	background: #176FB8;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	cursor: pointer;
+}
+.voucherBtn:hover { background: #1259a0; }
+
+.voucherAplicado {
+	background: #dcfce7;
+	border: 1px solid #86efac;
+	border-radius: 8px;
+	padding: 8px 12px;
+	font-size: 0.8rem;
+	color: #16a34a;
+}
+
+/* totais */
+.resumoTotais { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
+.resumoLinha { display: flex; justify-content: space-between; font-size: 0.875rem; color: #555; }
+.resumoDesconto { color: #16a34a; }
+.resumoFrete { color: #16a34a; font-weight: 500; }
+.resumoTotal { font-size: 1rem; font-weight: 700; color: #111; }
+
+/* vazio */
+.vazioWrap {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	text-align: center;
+	padding: 4rem;
+}
+
+.vazioIcon { color: #d1d5db; }
+.vazioWrap h2 { font-size: 1.25rem; font-weight: 600; color: #111; }
+.vazioWrap p { font-size: 0.875rem; color: #888; }
+
+.voltarBtn {
+	padding: 10px 24px;
+	background: #176FB8;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	cursor: pointer;
+}
+
+.voltarBtn:hover { background: #1259a0; }
+
+/* confirmação */
+.confirmacaoWrap {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	text-align: center;
+	padding: 4rem;
+}
+
+.confirmacaoIcon {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	background: #dcfce7;
+	color: #16a34a;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.confirmacaoTitulo { font-size: 1.75rem; font-weight: 700; color: #111; }
+.confirmacaoNum { font-size: 1rem; color: #555; }
+.confirmacaoDesc { font-size: 0.875rem; color: #888; max-width: 400px; }
+
+.confirmacaoBtn {
+	padding: 11px 28px;
+	background: #176FB8;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	cursor: pointer;
+	margin-top: 0.5rem;
+}
+
+.confirmacaoBtn:hover { background: #1259a0; }
