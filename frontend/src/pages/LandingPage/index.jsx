@@ -17,15 +17,22 @@ const MARCAS = [
 	{ nome: "XIAOMI", cor: "#fce7d6", desconto: "Até 80% OFF", logoColor: "#e86c30" },
 ];
 
-// corSecundaria agora vem como prop — era o bug que causava crash
-function ProdutoCard({ produto, wide = false, corSecundaria, onAdicionar }) {
+// corSecundaria 
+function ProdutoCard({ produto, wide = false, corSecundaria, corPrimaria, onAdicionar }) {
 	if (!produto) return null;
 	const economia = produto.precoOld ? produto.precoOld - produto.preco : 0;
-	const pct = produto.precoOld ? Math.round((1 - produto.preco / produto.precoOld) * 100) : 0;
+	const pct = produto.precoOld
+		? Math.round((1 - produto.preco / produto.precoOld) * 100)
+		: (produto.desconto > 0 ? produto.desconto : 0);
+
 	return (
-		<div className={`${styles.prodCard} ${wide ? styles.prodCardWide : ""}`} onClick={() => console.log("produto clicado", produto.id)}>
+		<div className={`${styles.prodCard} ${wide ? styles.prodCardWide : ""}`}>
 			<div className={styles.prodImgWrap}>
-				{pct > 0 && <span className={styles.prodBadge} style={{ background: corSecundaria }}>{pct}% PROMO</span>}
+				{pct > 0 && (
+					<span className={styles.prodBadge} style={{ background: corSecundaria }}>
+						{pct}% PROMO
+					</span>
+				)}
 				{produto.imagem
 					? <img src={produto.imagem} alt={produto.nome} className={styles.prodImgReal} />
 					: <div className={styles.prodImg}><span>{produto.nome.charAt(0)}</span></div>
@@ -34,16 +41,29 @@ function ProdutoCard({ produto, wide = false, corSecundaria, onAdicionar }) {
 			<div className={styles.prodInfo}>
 				<p className={styles.prodNome}>{produto.nome}</p>
 				<div className={styles.prodPrecos}>
-					<span className={styles.prodPreco}>R$ {BRL(produto.preco)}</span>
-					{produto.precoOld && <span className={styles.prodPrecoOld}>R$ {BRL(produto.precoOld)}</span>}
+					<span className={styles.prodPreco}>
+						R$ {Number(produto.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+					</span>
+					{produto.precoOld && (
+						<span className={styles.prodPrecoOld}>
+							R$ {Number(produto.precoOld).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+						</span>
+					)}
 				</div>
-				{economia > 0 && <p className={styles.prodEconomia}>Economize R$ {BRL(economia)}</p>}
+				{economia > 0 && (
+					<p className={styles.prodEconomia}>
+						Economize R$ {economia.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+					</p>
+				)}
 				{onAdicionar && (
 					<button
 						className={styles.addCarrinhoBtn}
-						onClick={() => onAdicionar(produto)}
+						style={{ color: corSecundaria, borderColor: corSecundaria }}
+						onMouseEnter={e => { e.currentTarget.style.background = corSecundaria; e.currentTarget.style.color = "#fff"; }}
+						onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = corSecundaria; }}
+						onClick={(e) => { e.stopPropagation(); onAdicionar(produto); }}
 					>
-						+ Adicionar ao carrinho
+						🛒 Adicionar ao carrinho
 					</button>
 				)}
 			</div>
@@ -147,7 +167,7 @@ export default function LandingPage() {
 						<div className={styles.prodGrid}>
 							{resultadosBusca.length > 0
 								? resultadosBusca.map((p, i) => (
-									<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={adicionar} />
+									<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={(produto) => adicionar(produto.id, 1)} />
 								))
 								: <p style={{ fontSize: "0.875rem", color: "#888" }}>Nenhum produto encontrado para "{busca}".</p>
 							}
@@ -204,7 +224,7 @@ export default function LandingPage() {
 							<div className={styles.prodGrid}>
 								{prodGrid1.length > 0
 									? prodGrid1.map((p, i) => (
-										<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={adicionar} />
+										<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} corPrimaria={corPrimaria} onAdicionar={(p) => adicionar(p.id, 1)} />
 									))
 									: <p style={{ fontSize: "0.875rem", color: "#888" }}>Nenhum produto adicionado. Configure em Configurações → Grid 1.</p>
 								}
@@ -230,7 +250,7 @@ export default function LandingPage() {
 							<div className={styles.prodGrid}>
 								{prodGrid2.length > 0
 									? prodGrid2.map((p, i) => (
-										<ProdutoCard key={i} produto={p} wide corSecundaria={corSecundaria} onAdicionar={adicionar} />
+										<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} corPrimaria={corPrimaria} onAdicionar={(p) => adicionar(p.id, 1)} />
 									))
 									: <p style={{ fontSize: "0.875rem", color: "#888" }}>Nenhum produto adicionado. Configure em Configurações → Grid 2.</p>
 								}
@@ -258,7 +278,7 @@ export default function LandingPage() {
 							<div className={styles.gridLine} style={{ background: corPrimaria }} />
 							<div className={styles.prodGrid}>
 								{prodGrid3.length > 0
-									? prodGrid3.map((p, i) => <ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={adicionar} />)
+									? prodGrid3.map((p, i) => <ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} corPrimaria={corPrimaria} onAdicionar={(p) => adicionar(p.id, 1)} />)
 									: <p style={{ fontSize: "0.875rem", color: "#888" }}>Nenhum produto adicionado. Configure em Configurações → Grid 3.</p>
 								}
 							</div>

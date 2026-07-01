@@ -385,3 +385,28 @@
 }
 
 .confirmacaoBtn:hover { background: #1259a0; }
+
+
+/* ── desconto no item do carrinho ───────────────────── */
+.itemPrecos {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-top: 2px;
+}
+
+.itemPrecoOld {
+	font-size: 0.78rem;
+	color: #aaa;
+	text-decoration: line-through;
+}
+
+.itemDescontoBadge {
+	padding: 1px 7px;
+	background: #dcfce7;
+	color: #16a34a;
+	border-radius: 99px;
+	font-size: 0.7rem;
+	font-weight: 600;
+}

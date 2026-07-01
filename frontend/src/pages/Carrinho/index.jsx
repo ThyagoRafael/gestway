@@ -292,33 +292,53 @@ export default function Carrinho() {
 				<div className={styles.main}>
 					{/* etapa 0: itens do carrinho */}
 					{etapa === 0 && (
-						<div className={styles.itensList}>
-							{itens.map(item => (
-								<div key={item.id} className={styles.itemCard}>
-									<div className={styles.itemThumb}>
-										{item.imagem
-											? <img src={item.imagem} alt={item.nome}/>
-											: <span className={styles.itemLetra}>{item.nome.charAt(0)}</span>
-										}
-									</div>
-									<div className={styles.itemInfo}>
-										<p className={styles.itemNome}>{item.nome}</p>
-										<p className={styles.itemCategoria}>{item.categoria}</p>
-										<p className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</p>
-									</div>
-									<div className={styles.itemControles}>
-										<button onClick={() => alterarQtd(item.idProduto, item.qtd - 1)}><FiMinus size={13}/></button>
-										<span>{item.qtd}</span>
-										<button onClick={() => alterarQtd(item.idProduto, item.qtd + 1)}><FiPlus size={13}/></button>
-									</div>
-									<p className={styles.itemTotal}>{BRL(Number(item.preco) * item.qtd)}</p>
-									<button className={styles.itemRemover} onClick={() => remover(item.idProduto)}>
-										<FiTrash2 size={15}/>
-									</button>
-								</div>
-							))}
+	<div className={styles.itensList}>
+		{itens.map(item => (
+			<div key={item.id} className={styles.itemCard}>
+				<div className={styles.itemThumb}>
+					{item.imagem
+						? <img src={item.imagem} alt={item.nome}/>
+						: <span className={styles.itemLetra}>{item.nome.charAt(0)}</span>
+					}
+				</div>
+				<div className={styles.itemInfo}>
+					<p className={styles.itemNome}>{item.nome}</p>
+					<p className={styles.itemCategoria}>{item.categoria}</p>
+					{/* desconto: mostra preço original riscado + preço final */}
+					{item.precoOld ? (
+						<div className={styles.itemPrecos}>
+							<span className={styles.itemPrecoOld}>
+								{BRL(item.precoOld)} / un.
+							</span>
+							<span className={styles.itemPrecoUnit}>
+								{BRL(item.preco)} / un.
+							</span>
+							<span className={styles.itemDescontoBadge}>
+								{Math.round((1 - item.preco / item.precoOld) * 100)}% OFF
+							</span>
 						</div>
+					) : (
+						<p className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</p>
 					)}
+				</div>
+				<div className={styles.itemControles}>
+					<button onClick={() => alterarQtd(item.idProduto, item.qtd - 1)}>
+						<FiMinus size={13}/>
+					</button>
+					<span>{item.qtd}</span>
+					<button onClick={() => alterarQtd(item.idProduto, item.qtd + 1)}>
+						<FiPlus size={13}/>
+					</button>
+				</div>
+				<p className={styles.itemTotal}>{BRL(Number(item.preco) * item.qtd)}</p>
+				<button className={styles.itemRemover} onClick={() => remover(item.idProduto)}>
+					<FiTrash2 size={15}/>
+				</button>
+			</div>
+		))}
+	</div>
+)}
+
 
 					{/* etapa 1: entrega */}
 					{etapa === 1 && (
