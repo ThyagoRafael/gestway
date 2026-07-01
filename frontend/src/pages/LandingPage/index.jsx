@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiChevronDown,
          FiPhone, FiMail, FiInstagram, FiChevronRight } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { useConfig } from "../../contexts/ConfigContext";
+import { useCarrinho } from "../../contexts/CarrinhoContext";
 import styles from "./LandingPage.module.css";
 
 const BRL = (v) => Number(v ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
@@ -14,8 +15,8 @@ const MARCAS = [
 	{ nome:"XIAOMI", cor:"#fce7d6", desconto:"Até 80% OFF", logoColor:"#e86c30" },
 ];
 
-// ── card de produto ────────────────────────────────────────────────────────
-function ProdutoCard({ produto, wide = false }) {
+// corSecundaria agora vem como prop — era o bug que causava crash
+function ProdutoCard({ produto, wide = false, corSecundaria, onAdicionar }) {
 	if (!produto) return null;
 	const economia = produto.precoOld ? produto.precoOld - produto.preco : 0;
 	const pct = produto.precoOld ? Math.round((1 - produto.preco / produto.precoOld) * 100) : 0;
@@ -35,12 +36,19 @@ function ProdutoCard({ produto, wide = false }) {
 					{produto.precoOld && <span className={styles.prodPrecoOld}>R$ {BRL(produto.precoOld)}</span>}
 				</div>
 				{economia > 0 && <p className={styles.prodEconomia}>Economize R$ {BRL(economia)}</p>}
+				{onAdicionar && (
+					<button
+						className={styles.addCarrinhoBtn}
+						onClick={() => onAdicionar(produto)}
+					>
+						+ Adicionar ao carrinho
+					</button>
+				)}
 			</div>
 		</div>
 	);
 }
 
-// ── voucher flutuante ──────────────────────────────────────────────────────
 function VoucherFlutuante({ titulo, texto, voucher }) {
 	const [expanded, setExpanded] = useState(false);
 	return (
@@ -58,18 +66,27 @@ function VoucherFlutuante({ titulo, texto, voucher }) {
 	);
 }
 
-// ── página ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
-	const { config } = useConfig();
-	const navigate = useNavigate();
-	const [busca, setBusca] = useState("");
+	const { config }                         = useConfig();
+	const { adicionar, qtdTotal }            = useCarrinho();
+	const navigate                           = useNavigate();
+	const [busca, setBusca]                  = useState("");
 
 	const { banner1, banner2, grid1, grid2, exibirBanner,
 	        tituloVoucher, textoVoucher, voucherSel, corPrimaria, corSecundaria } = config;
 
-	// produtos dos slots (filtra nulls)
 	const prodGrid1 = grid1.slots.filter(Boolean);
 	const prodGrid2 = grid2.slots.filter(Boolean);
+
+	// busca filtra produtos dos dois grids
+	const termoBusca = busca.trim().toLowerCase();
+	const buscando   = termoBusca.length > 0;
+	const resultadosBusca = useMemo(() => {
+		if (!buscando) return [];
+		return [...prodGrid1, ...prodGrid2].filter(p =>
+			p.nome.toLowerCase().includes(termoBusca)
+		);
+	}, [termoBusca, buscando, prodGrid1, prodGrid2]);
 
 	return (
 		<div className={styles.page}>
@@ -82,12 +99,26 @@ export default function LandingPage() {
 					</div>
 					<div className={styles.buscaWrap}>
 						<FiSearch size={16} className={styles.buscaIcon}/>
-						<input className={styles.busca} placeholder="Pesquise o que deseja" value={busca} onChange={e=>setBusca(e.target.value)}/>
+						<input
+							className={styles.busca}
+							placeholder="Pesquise o que deseja"
+							value={busca}
+							onChange={e => setBusca(e.target.value)}
+						/>
 						<button className={styles.buscaMenuBtn}><FiMenu size={16}/></button>
 					</div>
 					<div className={styles.headerActions}>
-						<button className={styles.headerBtn} onClick={() => navigate("/entrar")}><FiUser size={16}/> Login / Registro</button>
-						<button className={styles.headerBtn}><FiShoppingCart size={16}/> Carrinho</button>
+						{/* BUG-001 FIX: navega para /entrar */}
+						<button className={styles.headerBtn} onClick={() => navigate("/entrar")}>
+							<FiUser size={16}/> Login / Registro
+						</button>
+						{/* CARRINHO FIX: navega para /carrinho e exibe badge */}
+						<button className={styles.headerBtn} onClick={() => navigate("/carrinho")} style={{position:"relative"}}>
+							<FiShoppingCart size={16}/> Carrinho
+							{qtdTotal > 0 && (
+								<span className={styles.carrinhoBadge}>{qtdTotal}</span>
+							)}
+						</button>
 					</div>
 				</div>
 				<nav className={styles.nav}>
@@ -98,101 +129,126 @@ export default function LandingPage() {
 			</header>
 
 			<main className={styles.main}>
-				{/* ── banner hero ─────────────────────────────────────── */}
-				<section className={styles.heroSection}>
-					<div className={styles.heroLeft} style={{background: corPrimaria}}>
-						<p className={styles.heroUpper}>{banner1.descUpper}</p>
-						<h2 className={styles.heroTitulo}>{banner1.titulo.toUpperCase()}</h2>
-						<p className={styles.heroDesc}>{banner1.desc}</p>
-						<button className={styles.heroBtn}>Compre já!</button>
-						<div className={styles.heroImgWrap}>
-							{banner1.imagem
-								? <img src={banner1.imagem} alt="banner1" className={styles.heroImgReal}/>
-								: <div className={styles.heroImgPlaceholder}/>
-							}
-							{banner1.desconto && <div className={styles.heroDesconto}>{banner1.desconto}</div>}
+				{/* ── resultado de busca ───────────────────────────────── */}
+				{buscando ? (
+					<section className={styles.gridSection}>
+						<div className={styles.gridHeader}>
+							<h3>Resultados para <span className={styles.gridCat} style={{color: corSecundaria}}>"{busca}"</span></h3>
+							<button className={styles.vejaBtn} onClick={() => setBusca("")}>Limpar busca</button>
 						</div>
-					</div>
-					<div className={styles.heroRight} style={{background: corSecundaria}}>
-						<p className={styles.heroUpper}>{banner2.descUpper}</p>
-						<h2 className={styles.heroTitulo}>{banner2.titulo}</h2>
-						<p className={styles.heroDesc}>{banner2.desc}</p>
-						<button className={styles.heroBtn}>Compre já!</button>
-						<div className={styles.heroImgWrap}>
-							{banner2.imagem
-								? <img src={banner2.imagem} alt="banner2" className={styles.heroImgReal}/>
-								: <div className={styles.heroImgPlaceholder}/>
+						<div className={styles.gridLine} style={{background: corPrimaria}}/>
+						<div className={styles.prodGrid}>
+							{resultadosBusca.length > 0
+								? resultadosBusca.map((p, i) => (
+									<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={adicionar}/>
+								))
+								: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto encontrado para "{busca}".</p>
 							}
-							{banner2.desconto && <div className={styles.heroDesconto}>{banner2.desconto}</div>}
 						</div>
-					</div>
-				</section>
-
-				{/* ── grid 1 ──────────────────────────────────────────── */}
-				<section className={styles.gridSection}>
-					<div className={styles.gridHeader}>
-						<h3>{grid1.titulo.replace("{categoria}", "")} <span className={styles.gridCat} style={{color: corSecundaria}}>{grid1.categoria}</span></h3>
-						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
-					</div>
-					<div className={styles.gridLine} style={{background: corPrimaria}}/>
-					<div className={styles.prodGrid}>
-						{prodGrid1.length > 0
-							? prodGrid1.map((p, i) => <ProdutoCard key={i} produto={p}/>)
-							: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 1.</p>
-						}
-					</div>
-				</section>
-
-				{/* ── carrossel de marcas ──────────────────────────────── */}
-				<section className={styles.gridSection}>
-					<div className={styles.gridHeader}>
-						<h3>As melhores marcas de <span className={styles.gridCat}  style={{color: corSecundaria}}>SMARTPHONES</span></h3>
-						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
-					</div>
-					<div className={styles.gridLine} style={{background: corPrimaria}}/>
-					<div className={styles.marcasGrid}>
-						{MARCAS.map(m => (
-							<div key={m.nome} className={styles.marcaCard} style={{background: m.cor}}>
-								<div className={styles.marcaTag}>{m.nome}</div>
-								<div className={styles.marcaLogoWrap}>
-									<div className={styles.marcaLogo} style={{color: m.logoColor||"#fff"}}>{m.nome.charAt(0)}</div>
-								</div>
-								<p className={styles.marcaDesconto} style={{color: m.cor==="#1c1c1e"?"#fff":"#333"}}>{m.desconto}</p>
-								<div className={styles.marcaImgPlaceholder}/>
-							</div>
-						))}
-					</div>
-					<div className={styles.dots}>
-						{[0,1,2,3,4,5,6].map(i=><span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`} style={i===0?{background:corPrimaria}:{}}/>)}
-					</div>
-				</section>
-
-				{/* ── grid 2 ──────────────────────────────────────────── */}
-				<section className={styles.gridSection}>
-					<div className={styles.gridHeader}>
-						<h3>{grid2.titulo.replace("{categoria}", "")} <span className={styles.gridCat}  style={{color: corSecundaria}}>{grid2.categoria}</span></h3>
-						<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
-					</div>
-					<div className={styles.gridLine} style={{background: corPrimaria}}/>
-					<div className={styles.prodGrid}>
-						{prodGrid2.length > 0
-							? prodGrid2.map((p, i) => <ProdutoCard key={i} produto={p} wide/>)
-							: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 2.</p>
-						}
-					</div>
-				</section>
-
-				{/* ── banner voucher ───────────────────────────────────── */}
-				{exibirBanner && (
-					<section className={styles.voucherBanner} style={{background: corPrimaria}}>
-						<div className={styles.voucherBannerBlob1}/>
-						<div className={styles.voucherBannerBlob2}/>
-						<p className={styles.voucherBannerTitle}>{tituloVoucher}</p>
-						<p className={styles.voucherBannerText}>
-							{textoVoucher}
-							{voucherSel && <strong> {voucherSel.codigo}</strong>}
-						</p>
 					</section>
+				) : (
+					<>
+						{/* ── banner hero ─────────────────────────────────────── */}
+						<section className={styles.heroSection}>
+							<div className={styles.heroLeft} style={{background: corPrimaria}}>
+								<p className={styles.heroUpper}>{banner1.descUpper}</p>
+								<h2 className={styles.heroTitulo}>{banner1.titulo.toUpperCase()}</h2>
+								<p className={styles.heroDesc}>{banner1.desc}</p>
+								<button className={styles.heroBtn}>Compre já!</button>
+								<div className={styles.heroImgWrap}>
+									{banner1.imagem
+										? <img src={banner1.imagem} alt="banner1" className={styles.heroImgReal}/>
+										: <div className={styles.heroImgPlaceholder}/>
+									}
+									{banner1.desconto && <div className={styles.heroDesconto}>{banner1.desconto}</div>}
+								</div>
+							</div>
+							<div className={styles.heroRight} style={{background: corSecundaria}}>
+								<p className={styles.heroUpper}>{banner2.descUpper}</p>
+								<h2 className={styles.heroTitulo}>{banner2.titulo}</h2>
+								<p className={styles.heroDesc}>{banner2.desc}</p>
+								<button className={styles.heroBtn}>Compre já!</button>
+								<div className={styles.heroImgWrap}>
+									{banner2.imagem
+										? <img src={banner2.imagem} alt="banner2" className={styles.heroImgReal}/>
+										: <div className={styles.heroImgPlaceholder}/>
+									}
+									{banner2.desconto && <div className={styles.heroDesconto}>{banner2.desconto}</div>}
+								</div>
+							</div>
+						</section>
+
+						{/* ── grid 1 ──────────────────────────────────────────── */}
+						<section className={styles.gridSection}>
+							<div className={styles.gridHeader}>
+								<h3>{grid1.titulo.replace("{categoria}", "")} <span className={styles.gridCat} style={{color: corSecundaria}}>{grid1.categoria}</span></h3>
+								<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
+							</div>
+							<div className={styles.gridLine} style={{background: corPrimaria}}/>
+							<div className={styles.prodGrid}>
+								{prodGrid1.length > 0
+									? prodGrid1.map((p, i) => (
+										<ProdutoCard key={i} produto={p} corSecundaria={corSecundaria} onAdicionar={adicionar}/>
+									))
+									: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 1.</p>
+								}
+							</div>
+						</section>
+
+						{/* ── carrossel de marcas ──────────────────────────────── */}
+						<section className={styles.gridSection}>
+							<div className={styles.gridHeader}>
+								<h3>As melhores marcas de <span className={styles.gridCat} style={{color: corSecundaria}}>SMARTPHONES</span></h3>
+								<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
+							</div>
+							<div className={styles.gridLine} style={{background: corPrimaria}}/>
+							<div className={styles.marcasGrid}>
+								{MARCAS.map(m => (
+									<div key={m.nome} className={styles.marcaCard} style={{background: m.cor}}>
+										<div className={styles.marcaTag}>{m.nome}</div>
+										<div className={styles.marcaLogoWrap}>
+											<div className={styles.marcaLogo} style={{color: m.logoColor||"#fff"}}>{m.nome.charAt(0)}</div>
+										</div>
+										<p className={styles.marcaDesconto} style={{color: m.cor==="#1c1c1e"?"#fff":"#333"}}>{m.desconto}</p>
+										<div className={styles.marcaImgPlaceholder}/>
+									</div>
+								))}
+							</div>
+							<div className={styles.dots}>
+								{[0,1,2,3,4,5,6].map(i=><span key={i} className={`${styles.dot} ${i===0?styles.dotAtivo:""}`} style={i===0?{background:corPrimaria}:{}}/>)}
+							</div>
+						</section>
+
+						{/* ── grid 2 ──────────────────────────────────────────── */}
+						<section className={styles.gridSection}>
+							<div className={styles.gridHeader}>
+								<h3>{grid2.titulo.replace("{categoria}", "")} <span className={styles.gridCat} style={{color: corSecundaria}}>{grid2.categoria}</span></h3>
+								<button className={styles.vejaBtn}>Veja mais <FiChevronRight size={14}/></button>
+							</div>
+							<div className={styles.gridLine} style={{background: corPrimaria}}/>
+							<div className={styles.prodGrid}>
+								{prodGrid2.length > 0
+									? prodGrid2.map((p, i) => (
+										<ProdutoCard key={i} produto={p} wide corSecundaria={corSecundaria} onAdicionar={adicionar}/>
+									))
+									: <p style={{fontSize:"0.875rem",color:"#888"}}>Nenhum produto adicionado. Configure em Configurações → Grid 2.</p>
+								}
+							</div>
+						</section>
+
+						{/* ── banner voucher ───────────────────────────────────── */}
+						{exibirBanner && (
+							<section className={styles.voucherBanner} style={{background: corPrimaria}}>
+								<div className={styles.voucherBannerBlob1}/>
+								<div className={styles.voucherBannerBlob2}/>
+								<p className={styles.voucherBannerTitle}>{tituloVoucher}</p>
+								<p className={styles.voucherBannerText}>
+									{textoVoucher}
+									{voucherSel && <strong> {voucherSel.codigo}</strong>}
+								</p>
+							</section>
+						)}
+					</>
 				)}
 			</main>
 
@@ -229,7 +285,6 @@ export default function LandingPage() {
 				<div className={styles.footerCopy}>© 2026 Todos os direitos reservados. GestWay.</div>
 			</footer>
 
-			{/* ── voucher flutuante ────────────────────────────────────── */}
 			<VoucherFlutuante titulo={tituloVoucher} texto={textoVoucher} voucher={voucherSel}/>
 		</div>
 	);
