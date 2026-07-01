@@ -307,12 +307,12 @@ export default function Carrinho() {
 										<p className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</p>
 									</div>
 									<div className={styles.itemControles}>
-										<button onClick={() => alterarQtd(item.id, item.qtd - 1)}><FiMinus size={13}/></button>
+										<button onClick={() => alterarQtd(item.idProduto, item.qtd - 1)}><FiMinus size={13}/></button>
 										<span>{item.qtd}</span>
-										<button onClick={() => alterarQtd(item.id, item.qtd + 1)}><FiPlus size={13}/></button>
+										<button onClick={() => alterarQtd(item.idProduto, item.qtd + 1)}><FiPlus size={13}/></button>
 									</div>
 									<p className={styles.itemTotal}>{BRL(Number(item.preco) * item.qtd)}</p>
-									<button className={styles.itemRemover} onClick={() => remover(item.id)}>
+									<button className={styles.itemRemover} onClick={() => remover(item.idProduto)}>
 										<FiTrash2 size={15}/>
 									</button>
 								</div>

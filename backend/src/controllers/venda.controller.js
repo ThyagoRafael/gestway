@@ -1,6 +1,8 @@
 import { prisma } from "../config/prisma.js";
 
 class VendaController {
+	async create(req, res) {}
+
 	async list(req, res) {
 		const vendas = await prisma.venda.findMany({
 			select: {

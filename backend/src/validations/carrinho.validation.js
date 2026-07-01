@@ -1,19 +1,10 @@
 import z from "zod";
 
 export const createCarrinhoItemSchema = z.object({
-	idProduto: z
-		.number({ required_error: "idProduto é obrigatório" })
-		.int()
-		.positive("idProduto deve ser um inteiro positivo"),
-	quantidade: z
-		.number({ required_error: "quantidade é obrigatória" })
-		.int()
-		.min(1, "quantidade mínima é 1"),
+	idProduto: z.number("O id do produto é obrigatório").int().positive("o id do produto deve ser um inteiro positivo"),
+	quantidade: z.number("A quantidade é obrigatória").int().min(1, "A quantidade mínima é 1"),
 });
 
 export const updateCarrinhoItemSchema = z.object({
-	quantidade: z
-		.number({ required_error: "quantidade é obrigatória" })
-		.int()
-		.min(0, "quantidade não pode ser negativa"),
+	quantidade: z.number("A quantidade é obrigatória").int().min(0, "A quantidade não pode ser negativa"),
 });

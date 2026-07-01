@@ -72,7 +72,7 @@ export default function CategoriaProdutos() {
 	}, [nomeCategoria]);
 
 	const handleAdicionar = (produto) => {
-		adicionar(produto);
+		adicionar(produto.id, 1);
 		setToast(`${produto.nome} adicionado!`);
 		setTimeout(() => setToast(null), 2500);
 	};

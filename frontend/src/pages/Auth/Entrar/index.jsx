@@ -11,6 +11,7 @@ import FormSection     from "../../../components/FormSection";
 
 import { RULES, validarEmail } from "../../../utils/useAuthValidation";
 import { login, salvarSessao } from "../../../services/auth";
+import { useCarrinho } from "../../../contexts/CarrinhoContext"
 import styles from "./Entrar.module.css";
 
 export default function Entrar() {
@@ -23,6 +24,7 @@ export default function Entrar() {
 
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { carregarCarrinho } = useCarrinho()
 
 	useEffect(() => {
 		if (location.state?.cadastroSucesso) {
@@ -68,7 +70,8 @@ export default function Entrar() {
 		try {
 			const data = await login({ email: formData.email, password: formData.password });
 			salvarSessao(data.token, data.user);
-			navigate("/dashboard");
+			await carregarCarrinho()
+			navigate("/");
 		} catch (err) {
 			setApiError(err.message);
 		} finally {
