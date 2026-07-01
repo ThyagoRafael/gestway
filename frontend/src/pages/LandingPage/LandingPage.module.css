@@ -147,3 +147,32 @@
 .voucherFloatTitle { font-size:.8rem;font-weight:600;white-space:nowrap; }
 .voucherFloatCode { font-size:1rem;font-weight:900;letter-spacing:.05em; }
 .voucherFloatDesc { font-size:.75rem;color:rgba(255,255,255,.85); }
+
+.carrinhoBadge {
+	background: #f59e0b;
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	padding: 1px 6px;
+	border-radius: 99px;
+	margin-left: 4px;
+}
+
+.navItem {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.navItem:hover {
+    background: #f3f4f6;
+}

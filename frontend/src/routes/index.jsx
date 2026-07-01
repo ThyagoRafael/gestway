@@ -19,13 +19,17 @@ import Movimentacoes from "../pages/Movimentacoes";
 import Relatorios    from "../pages/Relatorios";
 import Vouchers      from "../pages/Vouchers";
 import Configuracoes from "../pages/Configuracoes";
-import Perfil        from "../pages/Perfil";
+import Perfil              from "../pages/Perfil";
+import CategoriaProdutos    from "../pages/CategoriaProdutos";
+import Carrinho             from "../pages/Carrinho";
 
 export default function Router() {
 	return (
 		<Routes>
 			{/* Landing page pública */}
 			<Route path="/" element={<LandingPage />} />
+			<Route path="/categoria/:categoria" element={<CategoriaProdutos />} />
+			<Route path="/carrinho" element={<Carrinho />} />
 
 			{/* Rotas de autenticação — sem sidebar */}
 			<Route element={<MainLayout />}>

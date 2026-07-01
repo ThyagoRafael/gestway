@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiChevronDown,
          FiPhone, FiMail, FiInstagram, FiChevronRight } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { useConfig } from "../../contexts/ConfigContext";
+import { useCarrinho } from "../../contexts/CarrinhoContext";
 import styles from "./LandingPage.module.css";
 
 const BRL = (v) => Number(v ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
@@ -60,6 +62,8 @@ function VoucherFlutuante({ titulo, texto, voucher }) {
 // ── página ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
 	const { config } = useConfig();
+	const navigate = useNavigate();
+	const { qtdTotal } = useCarrinho();
 	const [busca, setBusca] = useState("");
 
 	const { banner1, banner2, grid1, grid2, exibirBanner,
@@ -84,13 +88,13 @@ export default function LandingPage() {
 						<button className={styles.buscaMenuBtn}><FiMenu size={16}/></button>
 					</div>
 					<div className={styles.headerActions}>
-						<button className={styles.headerBtn}><FiUser size={16}/> Login / Registro</button>
-						<button className={styles.headerBtn}><FiShoppingCart size={16}/> Carrinho</button>
+						<button className={styles.headerBtn} onClick={() => navigate("/entrar")}><FiUser size={16}/> Login / Registro</button>
+						<button className={styles.headerBtn} onClick={() => navigate("/carrinho")}><FiShoppingCart size={16}/> Carrinho {qtdTotal > 0 && <span className={styles.carrinhoBadge}>{qtdTotal}</span>}</button>
 					</div>
 				</div>
 				<nav className={styles.nav}>
 					{["Eletrônicos","Vestuários","Licenças","E-books","Saúde"].map(c => (
-						<button key={c} className={styles.navItem}>{c} <FiChevronDown size={12}/></button>
+						<button key={c} className={styles.navItem} onClick={() => navigate(`/categoria/${encodeURIComponent(c)}`)}>{c} <FiChevronDown size={12}/></button>
 					))}
 				</nav>
 			</header>
