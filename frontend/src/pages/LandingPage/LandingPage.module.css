@@ -148,35 +148,31 @@
 .voucherFloatCode { font-size:1rem;font-weight:900;letter-spacing:.05em; }
 .voucherFloatDesc { font-size:.75rem;color:rgba(255,255,255,.85); }
 
-/* badge de quantidade no botão carrinho */
 .carrinhoBadge {
-	position: absolute;
-	top: -6px;
-	right: -6px;
-	background: #e53e3e;
+	background: #f59e0b;
 	color: #fff;
-	font-size: 0.65rem;
+	font-size: 0.7rem;
 	font-weight: 700;
-	width: 18px;
-	height: 18px;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	padding: 1px 6px;
+	border-radius: 99px;
+	margin-left: 4px;
 }
 
-/* botão adicionar ao carrinho nos cards */
-.addCarrinhoBtn {
-	margin-top: 8px;
-	padding: 6px 12px;
-	background: #4f72e3;
-	color: #fff;
-	border: none;
-	border-radius: 6px;
-	font-size: 0.75rem;
-	cursor: pointer;
-	width: 100%;
+.navItem {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
-.addCarrinhoBtn:hover { background: #3d5fc0; }
-
+.navItem:hover {
+    background: #f3f4f6;
+}
