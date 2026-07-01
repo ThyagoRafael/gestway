@@ -4,11 +4,8 @@ import { adminMiddleware, authMiddleware } from "../middlewares/auth.middleware.
 
 const categoriaRoutes = Router();
 
-categoriaRoutes.use(authMiddleware);
-categoriaRoutes.use(adminMiddleware);
-
-categoriaRoutes.post("/", categoriaController.createCategoria);
+categoriaRoutes.post("/", authMiddleware, adminMiddleware, categoriaController.createCategoria);
 categoriaRoutes.get("/", categoriaController.listCategoria);
-categoriaRoutes.patch("/:categoriaId", categoriaController.updateCategoria);
+categoriaRoutes.patch("/:categoriaId", authMiddleware, adminMiddleware, categoriaController.updateCategoria);
 
 export { categoriaRoutes };

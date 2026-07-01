@@ -273,6 +273,7 @@ model produto {
   imagem_produto           String?                @db.VarChar(255)
   descricao_produto        String?                @db.VarChar(250)
   id_categoria             Int?
+  id_vendedor              Int?
   status_produto           produto_status_produto @default(DISPONIVEL)
   ativo_produto            Boolean                @default(true)
   controla_estoque_produto Boolean                @default(true)
@@ -286,6 +287,7 @@ model produto {
   movimentacao_estoque     movimentacao_estoque[]
   categoria                categoria?             @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Restrict, map: "fk_produto_categoria")
   venda_item               venda_item[]
+  vendedor                 vendedor?              @relation(fields: [id_vendedor], references: [id_vendedor])
 
   @@index([ativo_produto], map: "idx_produto_ativo")
   @@index([id_categoria], map: "idx_produto_categoria")
@@ -439,6 +441,7 @@ model vendedor {
   comissao_mensal_vendedor  comissao_mensal_vendedor[]
   movimentacao_estoque      movimentacao_estoque[]
   venda                     venda[]
+  produtos                  produto[]
 
   @@index([ativo_vendedor], map: "idx_vendedor_ativo")
   @@index([data_criacao_vendedor, data_atualizacao_vendedor], map: "idx_vendedor_datas")
