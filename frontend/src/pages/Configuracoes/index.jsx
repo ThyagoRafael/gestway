@@ -232,6 +232,7 @@ export default function Configuracoes() {
 				<div className={styles.gridsWrap}>
 					<GridPromocoes numero={1} gridKey="grid1"/>
 					<GridPromocoes numero={2} gridKey="grid2"/>
+					<GridPromocoes numero={3} gridKey="grid3"/>
 				</div>
 			</section>
 

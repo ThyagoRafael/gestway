@@ -22,6 +22,7 @@ const INICIAL = {
 	},
 	grid1: { titulo: "As melhores promoções em {categoria}", categoria: "Eletrônicos", slots: [null, null, null, null] },
 	grid2: { titulo: "As melhores promoções em {categoria}", categoria: "E-books",     slots: [null, null, null, null] },
+	grid3: { titulo: "As melhores promoções em {categoria}", categoria: "Vestuários", slots: [null, null, null, null] },
 	exibirBanner:  true,
 	tituloVoucher: "Voucher de Bem-Vindo!",
 	textoVoucher:  '10% OFF com o código "BEMVINDO10"',
@@ -29,11 +30,18 @@ const INICIAL = {
 };
 
 function carregarConfig() {
-	try {
-		const salvo = localStorage.getItem(STORAGE_KEY);
-		if (salvo) return { ...INICIAL, ...JSON.parse(salvo) };
-	} catch {}
-	return INICIAL;
+    try {
+        const salvo = localStorage.getItem(STORAGE_KEY);
+        if (salvo) {
+            const parsed = JSON.parse(salvo);
+            return {
+                ...INICIAL,
+                ...parsed,
+                grid3: parsed.grid3 ?? INICIAL.grid3,
+            };
+        }
+    } catch {}
+    return INICIAL;
 }
 
 const ConfigContext = createContext(null);
