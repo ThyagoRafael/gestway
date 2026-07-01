@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma.js";
 import { registerVendaSchema } from "../validations/venda.validation.js";
 import { AppError } from "../errors/AppError.js";
 import { getClienteId } from "../helpers/user.js";
+import { Prisma } from "@prisma/client";
 class VendaController {
 	async create(req, res) {
 		const now = new Date();
@@ -20,37 +21,53 @@ class VendaController {
 			},
 		});
 
-		let totalDesconto = 0;
-		let totalLiquido = bodyData.totalBruto;
-
-		if (bodyData.voucherCodigo) {
-			const voucher = await prisma.voucher.findFirst({
+		await prisma.$transaction(async (tx) => {
+			const itensCarrinho = await tx.carrinho_item.findMany({
 				where: {
-					codigo_voucher: bodyData.voucherCodigo,
-					data_inicio_voucher: {
-						lte: now,
-					},
-					data_validade_voucher: {
-						gt: now,
-					},
+					id_carrinho: bodyData.idCarrinho,
 				},
 				select: {
-					porcentagem_desconto_voucher: true,
+					id_produto: true,
+					quantidade: true,
+					preco_unitario_snapshot: true,
 				},
 			});
 
-			if (voucher) {
-				totalDesconto = bodyData.totalBruto.mul(voucher.porcentagem_desconto_voucher).div(100);
-				totalLiquido = bodyData.totalBruto.sub(totalDesconto);
-			}
-		}
+			const totalBruto = itensCarrinho.reduce(
+				(total, item) => total.plus(item.preco_unitario_snapshot.mul(item.quantidade)),
+				new Prisma.Decimal(0),
+			);
 
-		await prisma.$transaction(async (tx) => {
-			await tx.venda.create({
+			let totalDesconto = 0;
+			let totalLiquido = totalBruto;
+
+			if (bodyData.voucherCodigo) {
+				const voucher = await prisma.voucher.findFirst({
+					where: {
+						codigo_voucher: bodyData.voucherCodigo,
+						data_inicio_voucher: {
+							lte: now,
+						},
+						data_validade_voucher: {
+							gt: now,
+						},
+					},
+					select: {
+						porcentagem_desconto_voucher: true,
+					},
+				});
+
+				if (voucher) {
+					totalDesconto = totalBruto.mul(voucher.porcentagem_desconto_voucher).div(100);
+					totalLiquido = totalBruto.sub(totalDesconto);
+				}
+			}
+
+			const venda = await tx.venda.create({
 				data: {
 					numero_pedido: bodyData.numeroPedido,
 					id_carrinho: bodyData.idCarrinho,
-					total_bruto: bodyData.totalBruto,
+					total_bruto: totalBruto,
 					total_desconto: totalDesconto,
 					total_liquido: totalLiquido,
 					id_vendedor: vendedor.id_vendedor,
@@ -58,38 +75,38 @@ class VendaController {
 				},
 			});
 
-			const produtosCarrinho = await tx.carrinho_item.findMany({
-				where: {
-					id_carrinho: bodyData.idCarrinho,
-				},
-				select: {
-					id_produto: true,
-					quantidade: true,
-				},
+			await tx.venda_item.createMany({
+				data: itensCarrinho.map((item) => ({
+					id_venda: venda.id_venda,
+					id_produto: item.id_produto,
+					quantidade: item.quantidade,
+					preco_unitario_snapshot: item.preco_unitario_snapshot,
+					subtotal: item.preco_unitario_snapshot.mul(item.quantidade),
+				})),
 			});
 
-			for (const produto of produtosCarrinho) {
-				await tx.produto.update({
-					where: {
-						id_produto: produto.id_produto,
-					},
-					data: {
-						estoque_atual_produto: {
-							decrement: produto.quantidade,
-						},
-					},
-				});
-			}
-
 			await tx.movimentacao_estoque.createMany({
-				data: produtosCarrinho.map((produto) => ({
-					id_produto: produto.id_produto,
+				data: itensCarrinho.map((item) => ({
+					id_produto: item.id_produto,
 					tipo_movimentacao: "SAIDA",
-					quantidade: produto.quantidade,
+					quantidade: item.quantidade,
 					motivo: `Venda #${bodyData.numeroPedido}`,
 					id_vendedor: vendedor.id_vendedor,
 				})),
 			});
+
+			for (const item of itensCarrinho) {
+				await tx.produto.update({
+					where: {
+						id_produto: item.id_produto,
+					},
+					data: {
+						estoque_atual_produto: {
+							decrement: item.quantidade,
+						},
+					},
+				});
+			}
 
 			await tx.carrinho.update({
 				where: {
