@@ -11,11 +11,16 @@ const STATUS_CONFIG = {
 	inativo:      { label: "Inativo",       cls: "badgeInativo"      },
 };
 
-const fmt = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const STATUS_MANUAIS = ["disponivel", "inativo", "indisponivel"];
 
-function calcStatus(estoque, estoqueMinimo = 0) {
-	if (estoque === 0)           return "indisponivel";
-	if (estoque < estoqueMinimo) return "baixo";
+const fmt = (v) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+// Calcula status automaticamente baseado no estoque
+// Se o usuário forçou "inativo", respeita. Caso contrário, calcula.
+function calcStatus(estoque, estoqueMinimo = 0, statusManual = null) {
+	if (statusManual === "inativo") return "inativo";
+	if (estoque === 0)              return "indisponivel";
+	if (estoqueMinimo > 0 && estoque <= estoqueMinimo) return "baixo";
 	return "disponivel";
 }
 
@@ -78,12 +83,23 @@ function Modal({ titulo, subtitulo, onClose, children }) {
 	);
 }
 
-function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
-	const empty = { nome: "", idCategoria: "", preco: "", estoqueInicial: "", estoqueMinimo: "", imagem: "", descricao: "" };
+// ── formulário ───────────────────────────────────────────────────────────────
+// modoEdicao = true → exibe campo de status manual
+function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading, modoEdicao = false }) {
+	const empty = {
+		nome: "", idCategoria: "", preco: "", estoqueInicial: "",
+		estoqueMinimo: "", desconto: "", statusManual: "disponivel",
+		imagem: "", descricao: "",
+	};
 	const [form, setForm]       = useState(inicial ?? empty);
 	const [preview, setPreview] = useState(inicial?.imagem ?? null);
 	const descMax = 250;
 	const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+	// calcula preview do status em tempo real no modo edição
+	const estoqueNum  = Number(form.estoqueInicial || 0);
+	const minimoNum   = Number(form.estoqueMinimo  || 0);
+	const statusPreview = calcStatus(estoqueNum, minimoNum, form.statusManual);
 
 	const handleImg = (e) => {
 		const file = e.target.files?.[0];
@@ -95,11 +111,13 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 
 	return (
 		<form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className={styles.form}>
+			{/* nome */}
 			<label className={styles.label}>
 				* Nome
 				<input className={styles.input} value={form.nome} onChange={set("nome")} required />
 			</label>
 
+			{/* categoria */}
 			<label className={styles.label}>
 				* Categoria
 				<div className={styles.selectWrap}>
@@ -113,6 +131,7 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 				</div>
 			</label>
 
+			{/* preço + desconto */}
 			<div className={styles.formRow}>
 				<label className={styles.label}>
 					* Preço de venda
@@ -122,18 +141,72 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 					</div>
 				</label>
 				<label className={styles.label}>
-					* Estoque Inicial
-					<input className={styles.input} type="number" min="0" value={form.estoqueInicial} onChange={set("estoqueInicial")} required />
+					Desconto
+					<div className={styles.inputSuffix}>
+						<input
+							className={styles.inputInner}
+							type="number" min="0" max="100" step="1"
+							value={form.desconto}
+							onChange={set("desconto")}
+							placeholder="0"
+						/>
+						<span>%</span>
+					</div>
 				</label>
 			</div>
 
-			<div className={styles.formRowRight}>
+			{/* preço com desconto calculado — só mostra se tiver desconto */}
+			{Number(form.desconto) > 0 && Number(form.preco) > 0 && (
+				<p className={styles.descontoPreview}>
+					Preço final: <strong>{fmt(Number(form.preco) * (1 - Number(form.desconto) / 100))}</strong>
+					<span className={styles.descontoBadge}>{form.desconto}% OFF</span>
+				</p>
+			)}
+
+			{/* estoque */}
+			<div className={styles.formRow}>
+				<label className={styles.label}>
+					* Estoque Inicial
+					<input className={styles.input} type="number" min="0" value={form.estoqueInicial} onChange={set("estoqueInicial")} required />
+				</label>
 				<label className={styles.label}>
 					* Estoque Mínimo
 					<input className={styles.input} type="number" min="0" value={form.estoqueMinimo} onChange={set("estoqueMinimo")} required />
 				</label>
 			</div>
 
+			{/* status — só no modal de edição */}
+			{modoEdicao && (
+				<label className={styles.label}>
+					Status
+					<div className={styles.statusEditRow}>
+						<div className={styles.selectWrap} style={{ flex: 1 }}>
+							<select
+								className={styles.select}
+								value={form.statusManual}
+								onChange={set("statusManual")}
+							>
+								<option value="disponivel">Disponível</option>
+								<option value="inativo">Inativo</option>
+								<option value="indisponivel">Indisponível</option>
+							</select>
+							<FiChevronDown size={14} className={styles.selectIcon} />
+						</div>
+						{/* preview do status real considerando estoque */}
+						<div className={styles.statusPreviewWrap}>
+							<span className={styles.statusPreviewLabel}>Resultado:</span>
+							<StatusBadge status={statusPreview} />
+						</div>
+					</div>
+					{form.statusManual !== "inativo" && estoqueNum > 0 && estoqueNum <= minimoNum && (
+						<p className={styles.statusHint}>
+							⚠️ Estoque abaixo do mínimo — será marcado como <strong>Baixo estoque</strong> automaticamente.
+						</p>
+					)}
+				</label>
+			)}
+
+			{/* imagem */}
 			<div className={styles.fotoSection}>
 				<span className={styles.label}>Imagem do Produto</span>
 				<div className={styles.fotoRow}>
@@ -155,6 +228,7 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 				</div>
 			</div>
 
+			{/* descrição */}
 			<label className={styles.label}>
 				Descrição
 				<div className={styles.textareaWrap}>
@@ -170,6 +244,7 @@ function ProdutoForm({ inicial, categorias, onSubmit, labelBtn, loading }) {
 	);
 }
 
+// ── página ────────────────────────────────────────────────────────────────────
 export default function Produtos() {
 	const [produtos,        setProdutos]        = useState([]);
 	const [categorias,      setCategorias]      = useState([]);
@@ -187,7 +262,6 @@ export default function Produtos() {
 	const filtroDrop = useDropdown();
 	const ativoDrop  = useDropdown();
 
-	// ── carrega produtos e categorias ────────────────────
 	const carregar = useCallback(async () => {
 		setCarregando(true);
 		try {
@@ -196,7 +270,6 @@ export default function Produtos() {
 				apiFetch("/categorias"),
 			]);
 			setProdutos(prods);
-			// mapeia categorias para { id, nome }
 			setCategorias(cats.map((c) => ({ id: c.id_categoria, nome: c.nome_categoria })));
 		} catch (err) {
 			setToast({ msg: err.message, tipo: "erro" });
@@ -207,7 +280,6 @@ export default function Produtos() {
 
 	useEffect(() => { carregar(); }, [carregar]);
 
-	// ── filtros ──────────────────────────────────────────
 	const nomesCategorias = [...new Set(produtos.map((p) => p.categoria).filter(Boolean))];
 
 	const aplicar = () => {
@@ -223,31 +295,41 @@ export default function Produtos() {
 		}));
 
 	let dados = produtos.filter((p) => p.nome.toLowerCase().includes(busca.toLowerCase()));
-	if (filtroAtivo === "ativos")    dados = dados.filter((p) => p.status !== "inativo");
-	if (filtroAtivo === "inativos")  dados = dados.filter((p) => p.status === "inativo");
-	if (filtroCategoria.length)      dados = dados.filter((p) => filtroCategoria.includes(p.categoria));
-	if (filtroStatus.length)         dados = dados.filter((p) => filtroStatus.includes(p.status));
+	if (filtroAtivo === "ativos")   dados = dados.filter((p) => p.status !== "inativo");
+	if (filtroAtivo === "inativos") dados = dados.filter((p) => p.status === "inativo");
+	if (filtroCategoria.length)     dados = dados.filter((p) => filtroCategoria.includes(p.categoria));
+	if (filtroStatus.length)        dados = dados.filter((p) => filtroStatus.includes(p.status));
 
 	// ── criar ────────────────────────────────────────────
 	const handleNovo = async (form) => {
 		setLoadingForm(true);
 		try {
 			const formData = new FormData();
-
-			formData.append("name", form.nome);
-			formData.append("price", form.preco);
-			formData.append("description", form.descricao);
-			formData.append("idCategoria", form.idCategoria);
+			formData.append("name",         form.nome);
+			formData.append("price",        form.preco);
+			formData.append("description",  form.descricao);
+			formData.append("idCategoria",  form.idCategoria);
 			formData.append("initialStock", form.estoqueInicial);
-			formData.append("minStock", form.estoqueMinimo);
-
-			if (form.imagem) {
-				formData.append("produtoImage", form.imagem);
-			}
+			formData.append("minStock",     form.estoqueMinimo);
+			// desconto: salvo como porcentagem (0-100)
+			if (form.desconto) formData.append("discount", form.desconto);
+			if (form.imagem instanceof File) formData.append("produtoImage", form.imagem);
 
 			const novo = await createProduto(formData);
-			// recalcula status com estoque mínimo local
-			setProdutos((prev) => [...prev, { ...novo, status: calcStatus(novo.estoque, novo.estoqueMinimo) }]);
+			const status = calcStatus(
+				Number(form.estoqueInicial),
+				Number(form.estoqueMinimo),
+				null
+			);
+			setProdutos((prev) => [...prev, {
+				...novo,
+				status,
+				desconto: Number(form.desconto || 0),
+				precoOld: Number(form.desconto) > 0 ? Number(form.preco) : null,
+				preco: Number(form.desconto) > 0
+					? Number(form.preco) * (1 - Number(form.desconto) / 100)
+					: Number(form.preco),
+			}]);
 			setModalNovo(false);
 			setToast({ msg: "Produto adicionado com sucesso!", tipo: "sucesso" });
 		} catch (err) {
@@ -257,28 +339,39 @@ export default function Produtos() {
 		}
 	};
 
-	// ── editar ───────────────────────────────────────────
+	// ── editar ────────────────────────────────────────────
 	const handleEditar = async (form) => {
 		setLoadingForm(true);
 		try {
 			const formData = new FormData();
-
-			formData.append("name", form.nome);
-			formData.append("price", form.preco);
-			formData.append("description", form.descricao);
-			formData.append("idCategoria", form.idCategoria);
+			formData.append("name",         form.nome);
+			formData.append("price",        form.preco);
+			formData.append("description",  form.descricao);
+			formData.append("idCategoria",  form.idCategoria);
 			formData.append("initialStock", form.estoqueInicial);
-			formData.append("minStock", form.estoqueMinimo);
-
-			if (form.imagem instanceof File) {
-				formData.append("produtoImage", form.imagem);
-			}
+			formData.append("minStock",     form.estoqueMinimo);
+			formData.append("status",       form.statusManual);
+			if (form.desconto) formData.append("discount", form.desconto);
+			if (form.imagem instanceof File) formData.append("produtoImage", form.imagem);
 
 			const atualizado = await updateProduto(modalEditar.id, formData);
+			const status = calcStatus(
+				Number(form.estoqueInicial),
+				Number(form.estoqueMinimo),
+				form.statusManual
+			);
 			setProdutos((prev) =>
 				prev.map((p) =>
 					p.id === modalEditar.id
-						? { ...atualizado, status: calcStatus(atualizado.estoque, atualizado.estoqueMinimo) }
+						? {
+								...atualizado,
+								status,
+								desconto: Number(form.desconto || 0),
+								precoOld: Number(form.desconto) > 0 ? Number(form.preco) : null,
+								preco: Number(form.desconto) > 0
+									? Number(form.preco) * (1 - Number(form.desconto) / 100)
+									: Number(form.preco),
+							}
 						: p
 				)
 			);
@@ -297,7 +390,6 @@ export default function Produtos() {
 			<h1 className={styles.titulo}>Produtos</h1>
 			<p className={styles.subtitulo}>Catálogo de itens e gerenciamento de estoque simples</p>
 
-			{/* controles */}
 			<div className={styles.controles}>
 				<div className={styles.buscaWrap}>
 					<FiSearch size={14} className={styles.buscaIcon} />
@@ -352,7 +444,6 @@ export default function Produtos() {
 				<button className={styles.novoBtn} onClick={() => setModalNovo(true)}>+ Novo Produto</button>
 			</div>
 
-			{/* tabela */}
 			<div className={styles.tableWrap}>
 				<table className={styles.table}>
 					<thead>
@@ -361,15 +452,16 @@ export default function Produtos() {
 							<th>Categoria</th>
 							<th>Estoque</th>
 							<th>Preço</th>
+							<th>Desconto</th>
 							<th>Status</th>
 							<th>Ações</th>
 						</tr>
 					</thead>
 					<tbody>
 						{carregando ? (
-							<tr><td colSpan={6} className={styles.vazio}>Carregando...</td></tr>
+							<tr><td colSpan={7} className={styles.vazio}>Carregando...</td></tr>
 						) : dados.length === 0 ? (
-							<tr><td colSpan={6} className={styles.vazio}>Nenhum produto encontrado.</td></tr>
+							<tr><td colSpan={7} className={styles.vazio}>Nenhum produto encontrado.</td></tr>
 						) : dados.map((p) => (
 							<tr key={p.id}>
 								<td>
@@ -379,8 +471,17 @@ export default function Produtos() {
 									</div>
 								</td>
 								<td>{p.categoria}</td>
-								<td>{p.estoqueAtual}</td>
-								<td>{fmt(p.preco)}</td>
+								<td>{p.estoqueAtual ?? p.estoqueInicial ?? 0}</td>
+								<td>
+									<div>{fmt(p.preco)}</div>
+									{p.precoOld && <div className={styles.precoOldTabela}>{fmt(p.precoOld)}</div>}
+								</td>
+								<td>
+									{p.desconto > 0
+										? <span className={styles.descontoBadgeTabela}>{p.desconto}% OFF</span>
+										: <span className={styles.semDesconto}>—</span>
+									}
+								</td>
 								<td><StatusBadge status={p.status} /></td>
 								<td>
 									<button className={styles.editBtn} onClick={() => setModalEditar(p)} title="Editar produto">
@@ -393,22 +494,30 @@ export default function Produtos() {
 				</table>
 			</div>
 
-			{/* modais */}
 			{modalNovo && (
 				<Modal titulo="Novo produto" subtitulo="*Preencha os dados do novo produto" onClose={() => setModalNovo(false)}>
-					<ProdutoForm categorias={categorias} labelBtn="Adicionar Produto" onSubmit={handleNovo} loading={loadingForm} />
+					<ProdutoForm
+						categorias={categorias}
+						labelBtn="Adicionar Produto"
+						onSubmit={handleNovo}
+						loading={loadingForm}
+					/>
 				</Modal>
 			)}
+
 			{modalEditar && (
 				<Modal titulo="Editar produto" subtitulo="*Edite os dados do produto" onClose={() => setModalEditar(null)}>
 					<ProdutoForm
+						modoEdicao
 						categorias={categorias}
 						inicial={{
-							nome:           modalEditar.nome,
-							idCategoria:    modalEditar.idCategoria,
-							preco:          modalEditar.preco,
-							estoqueInicial: modalEditar.estoqueInicial,
-							estoqueMinimo:  modalEditar.estoqueMinimo,
+							nome:          modalEditar.nome,
+							idCategoria:   modalEditar.idCategoria,
+							preco:         modalEditar.precoOld ?? modalEditar.preco,
+							estoqueInicial: modalEditar.estoqueInicial ?? modalEditar.estoqueAtual ?? 0,
+							estoqueMinimo:  modalEditar.estoqueMinimo ?? 0,
+							desconto:       modalEditar.desconto ?? 0,
+							statusManual:   modalEditar.status === "baixo" ? "disponivel" : (modalEditar.status ?? "disponivel"),
 							imagem:         modalEditar.imagem,
 							descricao:      modalEditar.descricao,
 						}}
