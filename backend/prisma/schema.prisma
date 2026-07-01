@@ -280,6 +280,7 @@ model produto {
   data_criacao_produto     DateTime               @default(now()) @db.DateTime(0)
   data_atualizacao_produto DateTime               @updatedAt @db.DateTime(0)
   preco_produto            Decimal                @db.Decimal(10, 2)
+  desconto_produto         Decimal  @default(0) @db.Decimal(5, 2)
   estoque_inicial_produto  Int
   estoque_minimo_produto   Int
   estoque_atual_produto    Int
