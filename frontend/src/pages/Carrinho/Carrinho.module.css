@@ -410,3 +410,13 @@
 	font-size: 0.7rem;
 	font-weight: 600;
 }
+.voucherRemover {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #dc2626;
+	font-size: 0.8rem;
+	margin-left: 8px;
+	padding: 0;
+}
+.voucherRemover:hover { color: #991b1b; }
