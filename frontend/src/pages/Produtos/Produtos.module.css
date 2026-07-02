@@ -552,3 +552,86 @@
 	from { transform: translateY(20px); opacity: 0; }
 	to   { transform: translateY(0);    opacity: 1; }
 }
+
+/* ── desconto ───────────────────────────────────────── */
+.inputSuffix {
+	display: flex;
+	align-items: center;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.inputSuffix span {
+	padding: 10px 10px;
+	background: #f3f4f6;
+	font-size: 0.85rem;
+	color: #555;
+	border-left: 1px solid #d1d5db;
+	white-space: nowrap;
+}
+
+.descontoPreview {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 0.85rem;
+	color: #555;
+	margin-top: -4px;
+}
+
+.descontoBadge {
+	padding: 2px 10px;
+	background: #dcfce7;
+	color: #16a34a;
+	border-radius: 99px;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+/* ── status edit ────────────────────────────────────── */
+.statusEditRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.statusPreviewWrap {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.statusPreviewLabel {
+	font-size: 0.78rem;
+	color: #888;
+}
+
+.statusHint {
+	font-size: 0.78rem;
+	color: #d97706;
+	margin-top: 4px;
+}
+
+/* ── tabela: desconto e preço riscado ───────────────── */
+.precoOldTabela {
+	font-size: 0.75rem;
+	color: #aaa;
+	text-decoration: line-through;
+}
+
+.descontoBadgeTabela {
+	padding: 2px 8px;
+	background: #dcfce7;
+	color: #16a34a;
+	border-radius: 99px;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.semDesconto {
+	color: #ccc;
+	font-size: 0.85rem;
+}

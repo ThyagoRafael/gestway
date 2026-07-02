@@ -2,26 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiMinus, FiPlus, FiTrash2, FiArrowLeft, FiShoppingCart, FiCheck } from "react-icons/fi";
 import { useCarrinho } from "../../contexts/CarrinhoContext";
+import { criarVenda } from "../../services/vendas";
+import { apiFetch } from "../../services/api";
+import { estaLogado } from "../../services/auth";
 import styles from "./Carrinho.module.css";
 
 const BRL = (v) => Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-// ── etapas ─────────────────────────────────────────────────────────────────
-const ETAPAS = ["Carrinho", "Entrega", "Pagamento", "Confirmação"];
+const ETAPAS = ["Carrinho", "Entrega", "Pagamento"];
 
 // ── formulário de entrega ──────────────────────────────────────────────────
 function FormEntrega({ dados, onChange }) {
 	const campos = [
-		{ key: "nome",      label: "Nome completo*",  type: "text",  placeholder: "Seu nome" },
-		{ key: "email",     label: "E-mail*",          type: "email", placeholder: "seu@email.com" },
-		{ key: "telefone",  label: "Telefone*",         type: "tel",   placeholder: "(61) 99999-9999" },
-		{ key: "cep",       label: "CEP*",              type: "text",  placeholder: "00000-000" },
-		{ key: "endereco",  label: "Endereço*",         type: "text",  placeholder: "Rua, número" },
-		{ key: "bairro",    label: "Bairro*",           type: "text",  placeholder: "Bairro" },
-		{ key: "cidade",    label: "Cidade*",           type: "text",  placeholder: "Cidade" },
-		{ key: "estado",    label: "Estado*",           type: "text",  placeholder: "UF",  maxLength: 2 },
+		{ key: "nome",     label: "Nome completo*", type: "text",  placeholder: "Seu nome" },
+		{ key: "email",    label: "E-mail*",         type: "email", placeholder: "seu@email.com" },
+		{ key: "telefone", label: "Telefone*",        type: "tel",   placeholder: "(61) 99999-9999" },
+		{ key: "cep",      label: "CEP*",             type: "text",  placeholder: "00000-000" },
+		{ key: "endereco", label: "Endereço*",        type: "text",  placeholder: "Rua, número" },
+		{ key: "bairro",   label: "Bairro*",          type: "text",  placeholder: "Bairro" },
+		{ key: "cidade",   label: "Cidade*",          type: "text",  placeholder: "Cidade" },
+		{ key: "estado",   label: "Estado*",          type: "text",  placeholder: "UF", maxLength: 2 },
 	];
-
 	return (
 		<div className={styles.formGrid}>
 			{campos.map(c => (
@@ -47,9 +48,9 @@ function FormPagamento({ metodo, onMetodo, dados, onChange }) {
 		<div className={styles.pagamentoWrap}>
 			<div className={styles.metodos}>
 				{[
-					{ key: "cartao",  label: "Cartão de crédito" },
-					{ key: "pix",     label: "PIX" },
-					{ key: "boleto",  label: "Boleto bancário" },
+					{ key: "cartao", label: "Cartão de crédito" },
+					{ key: "pix",    label: "PIX" },
+					{ key: "boleto", label: "Boleto bancário" },
 				].map(m => (
 					<button
 						key={m.key}
@@ -99,9 +100,7 @@ function FormPagamento({ metodo, onMetodo, dados, onChange }) {
 
 			{metodo === "pix" && (
 				<div className={styles.pixWrap}>
-					<div className={styles.pixQR}>
-						<div className={styles.pixQRInner}>📱</div>
-					</div>
+					<div className={styles.pixQR}><div className={styles.pixQRInner}>📱</div></div>
 					<p className={styles.pixLabel}>Chave PIX: <strong>gestway@suporte.com.br</strong></p>
 					<p className={styles.pixSub}>O pagamento será confirmado em até 5 minutos após o comprovante.</p>
 				</div>
@@ -110,7 +109,7 @@ function FormPagamento({ metodo, onMetodo, dados, onChange }) {
 			{metodo === "boleto" && (
 				<div className={styles.boletoWrap}>
 					<p className={styles.boletoLabel}>O boleto será gerado após a confirmação do pedido.</p>
-					<p className={styles.boletoSub}>Vencimento em 3 dias úteis. Após o pagamento, a confirmação pode levar até 2 dias úteis.</p>
+					<p className={styles.boletoSub}>Vencimento em 3 dias úteis.</p>
 				</div>
 			)}
 		</div>
@@ -118,7 +117,7 @@ function FormPagamento({ metodo, onMetodo, dados, onChange }) {
 }
 
 // ── resumo lateral ─────────────────────────────────────────────────────────
-function Resumo({ itens, total, voucher, onVoucher, desconto }) {
+function Resumo({ itens, total, voucher, onVoucher, desconto, loadingVoucher }) {
 	const [inputVoucher, setInputVoucher] = useState("");
 
 	return (
@@ -129,10 +128,7 @@ function Resumo({ itens, total, voucher, onVoucher, desconto }) {
 				{itens.map(i => (
 					<div key={i.id} className={styles.resumoItem}>
 						<div className={styles.resumoItemThumb}>
-							{i.imagem
-								? <img src={i.imagem} alt={i.nome}/>
-								: <span>{i.nome.charAt(0)}</span>
-							}
+							{i.imagem ? <img src={i.imagem} alt={i.nome}/> : <span>{i.nome.charAt(0)}</span>}
 						</div>
 						<div className={styles.resumoItemInfo}>
 							<p className={styles.resumoItemNome}>{i.nome}</p>
@@ -150,35 +146,35 @@ function Resumo({ itens, total, voucher, onVoucher, desconto }) {
 					value={inputVoucher}
 					onChange={e => setInputVoucher(e.target.value.toUpperCase())}
 				/>
-				<button className={styles.voucherBtn} onClick={() => onVoucher(inputVoucher)}>
-					Aplicar
+				<button
+					className={styles.voucherBtn}
+					onClick={() => onVoucher(inputVoucher)}
+					disabled={loadingVoucher}
+				>
+					{loadingVoucher ? "..." : "Aplicar"}
 				</button>
 			</div>
 
 			{voucher && (
 				<div className={styles.voucherAplicado}>
-					✓ Voucher <strong>{voucher.codigo}</strong> — {voucher.desconto} de desconto
+					✓ Voucher <strong>{voucher.codigo}</strong> — {voucher.desconto}% de desconto
 				</div>
 			)}
 
 			<div className={styles.resumoTotais}>
 				<div className={styles.resumoLinha}>
-					<span>Subtotal</span>
-					<span>{BRL(total)}</span>
+					<span>Subtotal</span><span>{BRL(total)}</span>
 				</div>
 				{desconto > 0 && (
 					<div className={`${styles.resumoLinha} ${styles.resumoDesconto}`}>
-						<span>Desconto</span>
-						<span>- {BRL(desconto)}</span>
+						<span>Desconto</span><span>- {BRL(desconto)}</span>
 					</div>
 				)}
 				<div className={styles.resumoLinha}>
-					<span>Frete</span>
-					<span className={styles.resumoFrete}>Grátis</span>
+					<span>Frete</span><span className={styles.resumoFrete}>Grátis</span>
 				</div>
 				<div className={`${styles.resumoLinha} ${styles.resumoTotal}`}>
-					<span>Total</span>
-					<span>{BRL(total - desconto)}</span>
+					<span>Total</span><span>{BRL(total - desconto)}</span>
 				</div>
 			</div>
 		</div>
@@ -187,8 +183,8 @@ function Resumo({ itens, total, voucher, onVoucher, desconto }) {
 
 // ── página principal ───────────────────────────────────────────────────────
 export default function Carrinho() {
-	const navigate        = useNavigate();
-	const { itens, remover, alterarQtd, limpar, total } = useCarrinho();
+	const navigate = useNavigate();
+	const { itens, id: idCarrinho, remover, alterarQtd, limpar, total } = useCarrinho();
 
 	const [etapa,         setEtapa]         = useState(0);
 	const [entrega,       setEntrega]       = useState({});
@@ -196,42 +192,66 @@ export default function Carrinho() {
 	const [pagamento,     setPagamento]     = useState({});
 	const [voucher,       setVoucher]       = useState(null);
 	const [pedidoNum,     setPedidoNum]     = useState(null);
+	const [loadingFinal,  setLoadingFinal]  = useState(false);
+	const [loadingVoucher,setLoadingVoucher]= useState(false);
+	const [erroFinal,     setErroFinal]     = useState(null);
+
+	const logado = estaLogado();
 
 	const desconto = voucher
-		? total * (parseInt(voucher.desconto) / 100)
+		? total * (Number(voucher.desconto) / 100)
 		: 0;
 
+	// ── validar voucher via API ──────────────────────────────────────────
 	const handleVoucher = async (codigo) => {
 		if (!codigo) return;
-		// TODO: integrar com GET /api/vouchers quando Thyago expor busca por código
-		// Por ora valida contra lista mock
-		const VOUCHERS_VALIDOS = { "BEMVIND0": 5, "GEST5": 10, "NIVER15": 15 };
-		const pct = VOUCHERS_VALIDOS[codigo];
-		if (pct) setVoucher({ codigo, desconto: `${pct}%` });
-		else alert("Voucher inválido ou expirado.");
+		setLoadingVoucher(true);
+		try {
+			// tenta validar via API
+			const data = await apiFetch(`/vouchers/validar/${codigo}`);
+			setVoucher({ codigo, desconto: data.porcentagem_desconto_voucher ?? data.discount ?? 0 });
+		} catch {
+			// fallback: mock local para demo sem banco
+			const MOCK = { "BEMVINDO10": 10, "GEST5": 5, "NIVER15": 15 };
+			const pct  = MOCK[codigo];
+			if (pct) setVoucher({ codigo, desconto: pct });
+			else alert("Voucher inválido ou expirado.");
+		} finally {
+			setLoadingVoucher(false);
+		}
 	};
 
+	// ── finalizar pedido ────────────────────────────────────────────────
 	const handleFinalizar = async () => {
-		// TODO: quando Thyago criar POST /api/vendas, integrar aqui:
-		// await apiFetch("/vendas", {
-		//   method: "POST",
-		//   body: JSON.stringify({
-		//     itens: itens.map(i => ({ id_produto: i.id, quantidade: i.qtd })),
-		//     metodo_pagamento: metodo,
-		//     voucher: voucher?.codigo,
-		//     endereco: entrega,
-		//   })
-		// });
-		const num = `PED-${Date.now().toString().slice(-6)}`;
-		setPedidoNum(num);
-		limpar();
-		setEtapa(3);
+		setLoadingFinal(true);
+		setErroFinal(null);
+
+		const numeroPedido = `PED-${Date.now().toString().slice(-6)}`;
+
+		try {
+			if (logado && idCarrinho) {
+				// usuário logado → cria venda real no banco
+				await criarVenda({
+					idCarrinho,
+					numeroPedido,
+					voucherCodigo: voucher?.codigo ?? null,
+				});
+			}
+			// não logado → apenas confirma localmente (sem persistir)
+			await limpar();
+			setPedidoNum(numeroPedido);
+			setEtapa(3);
+		} catch (err) {
+			setErroFinal(err.message ?? "Erro ao finalizar pedido. Tente novamente.");
+		} finally {
+			setLoadingFinal(false);
+		}
 	};
 
 	const avancar = () => setEtapa(e => e + 1);
 	const voltar  = () => etapa > 0 ? setEtapa(e => e - 1) : navigate("/");
 
-	// ── tela de confirmação ──────────────────────────────────────────────
+	// ── confirmação ──────────────────────────────────────────────────────
 	if (etapa === 3) {
 		return (
 			<div className={styles.page}>
@@ -268,7 +288,6 @@ export default function Carrinho() {
 
 	return (
 		<div className={styles.page}>
-			{/* header */}
 			<div className={styles.header}>
 				<button className={styles.backBtn} onClick={voltar}>
 					<FiArrowLeft size={16}/> {etapa === 0 ? "Voltar à loja" : "Voltar"}
@@ -276,9 +295,8 @@ export default function Carrinho() {
 				<h1 className={styles.titulo}>Carrinho</h1>
 			</div>
 
-			{/* steps */}
 			<div className={styles.steps}>
-				{ETAPAS.slice(0, 3).map((e, i) => (
+				{ETAPAS.map((e, i) => (
 					<div key={e} className={`${styles.step} ${i <= etapa ? styles.stepAtivo : ""}`}>
 						<div className={styles.stepNum}>{i + 1}</div>
 						<span>{e}</span>
@@ -288,9 +306,8 @@ export default function Carrinho() {
 			</div>
 
 			<div className={styles.layout}>
-				{/* conteúdo principal */}
 				<div className={styles.main}>
-					{/* etapa 0: itens do carrinho */}
+					{/* etapa 0: itens */}
 					{etapa === 0 && (
 						<div className={styles.itensList}>
 							{itens.map(item => (
@@ -304,7 +321,17 @@ export default function Carrinho() {
 									<div className={styles.itemInfo}>
 										<p className={styles.itemNome}>{item.nome}</p>
 										<p className={styles.itemCategoria}>{item.categoria}</p>
-										<p className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</p>
+										{item.precoOld ? (
+											<div className={styles.itemPrecos}>
+												<span className={styles.itemPrecoOld}>{BRL(item.precoOld)} / un.</span>
+												<span className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</span>
+												<span className={styles.itemDescontoBadge}>
+													{Math.round((1 - item.preco / item.precoOld) * 100)}% OFF
+												</span>
+											</div>
+										) : (
+											<p className={styles.itemPrecoUnit}>{BRL(item.preco)} / un.</p>
+										)}
 									</div>
 									<div className={styles.itemControles}>
 										<button onClick={() => alterarQtd(item.idProduto, item.qtd - 1)}><FiMinus size={13}/></button>
@@ -341,7 +368,12 @@ export default function Carrinho() {
 						</div>
 					)}
 
-					{/* botão de avanço */}
+					{erroFinal && (
+						<p style={{ color: "#dc2626", fontSize: "0.875rem", marginTop: "8px" }}>
+							{erroFinal}
+						</p>
+					)}
+
 					<div className={styles.acoes}>
 						{etapa < 2 && (
 							<button className={styles.proximoBtn} onClick={avancar} disabled={itens.length === 0}>
@@ -349,20 +381,24 @@ export default function Carrinho() {
 							</button>
 						)}
 						{etapa === 2 && (
-							<button className={styles.proximoBtn} onClick={handleFinalizar}>
-								Finalizar pedido
+							<button
+								className={styles.proximoBtn}
+								onClick={handleFinalizar}
+								disabled={loadingFinal}
+							>
+								{loadingFinal ? "Processando..." : "Finalizar pedido"}
 							</button>
 						)}
 					</div>
 				</div>
 
-				{/* resumo lateral */}
 				<Resumo
 					itens={itens}
 					total={total}
 					voucher={voucher}
 					onVoucher={handleVoucher}
 					desconto={desconto}
+					loadingVoucher={loadingVoucher}
 				/>
 			</div>
 		</div>
