@@ -1,33 +1,32 @@
 import { apiFetch } from "./api";
 
-// Backend retorna: numero_pedido, status_pagamento, criado_em, atualizado_em,
-//                  venda_item[]{produto{nome_produto}}, cliente{usuario{nome_completo_usuario}}, vendedor{nome_completo_vendedor}
-
-function formatarData(iso) {
-	if (!iso) return "";
-	const d = new Date(iso);
-	return d.toLocaleDateString("pt-BR") + " - " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function mapStatus(s) {
-	const map = { APROVADO: "Aprovado", RECUSADO: "Recusado", AGUARDANDO: "Aguardando", CANCELADO: "Cancelado", ESTORNADO: "Estornado" };
-	return map[s] ?? s;
-}
-
-function mapVenda(v) {
-	const produtos = (v.venda_item ?? []).map(i => i.produto?.nome_produto).filter(Boolean).join(", ");
-	return {
-		id:           v.numero_pedido,
-		status:       mapStatus(v.status_pagamento),
-		produto:      produtos || "—",
-		vendedor:     v.vendedor?.nome_completo_vendedor ?? "—",
-		cliente:      v.cliente?.usuario?.nome_completo_usuario ?? "—",
-		criadoEm:     formatarData(v.criado_em),
-		atualizadoEm: formatarData(v.atualizado_em),
-	};
-}
-
+/** GET /api/vendas — lista todas as vendas (admin) */
 export async function getVendas() {
 	const data = await apiFetch("/vendas");
-	return data.map(mapVenda);
+	return data.map((v) => ({
+		id: v.numero_pedido,
+		criadoEm: v.criado_em ? new Date(v.criado_em).toLocaleString("pt-BR") : "—",
+		atualizadoEm: v.atualizado_em ? new Date(v.atualizado_em).toLocaleString("pt-BR") : "—",
+		cliente: v.cliente?.usuario?.nome_completo_usuario ?? "—",
+		vendedor: v.vendedor?.nome_completo_vendedor ?? "—",
+		produtos: (v.venda_item ?? []).map((i) => i.produto?.nome_produto).filter(Boolean).join(", "),
+		totalBruto: Number(v.total_bruto ?? 0),
+		totalLiquido: Number(v.total_liquido ?? 0),
+		status: v.status_venda ?? "—",
+	}));
+}
+
+/**
+ * POST /api/vendas
+ * { idCarrinho, numeroPedido, voucherCodigo? }
+ */
+export async function criarVenda({ idCarrinho, numeroPedido, voucherCodigo }) {
+	return apiFetch("/vendas", {
+		method: "POST",
+		body: JSON.stringify({
+			idCarrinho,
+			numeroPedido,
+			...(voucherCodigo ? { voucherCodigo } : {}),
+		}),
+	});
 }
